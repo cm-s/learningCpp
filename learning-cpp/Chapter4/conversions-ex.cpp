@@ -18,52 +18,62 @@ using namespace std;
  * @param two variables by which user input will be stored.
  * @return variable with user input stored within.
  */
-void inMod(int& unit, int& val1, int& val2);
+void inMod(int& unit, float& val1, float& val2);
 /**
  * calculates kilogram and gram conversions.
  *
  * @param placeholders representing the input of pounds and ounces.
  * @return converted values for pounds and ounces.
  */
-void calcKG(int lbs, int oz);
+void calcKG(float lbs, float oz);
 /**
  * calculates pound and ounce conversions.
  *
  * @param placeholders representing the input of kilograms and grams.
  */
-void calcLB(int kg, int grams);
+void calcLB(float kg, float grams);
 /**
  * module to prompt for user input.
  *
  * @param variable to store the user's input in.
  */
-void prompt(char& userResponse);
+bool prompt(char userResponse);
 
 int main()
 {
-    //declaring values for place of user input.
-    int val1;
-    int val2;
+    float val1;
+    float val2;
     int unit;
-    //variable representing user response.
     char userResponse = 'y';
     do {
         inMod(unit, val1, val2);
         if (unit == 1) { 
             calcKG(val1, val2);
         } else {calcLB(val1, val2);}
-        prompt(userResponse);
-    } while(userResponse != 'n' || userResponse != 'N');
+    } while(prompt(userResponse));
 
 return 0;
 }
 
-void prompt(char& userResponse) {
-    cout << "Would you like to continue? y/N";
-    cin >> userResponse;
-};
+bool prompt(char userResponse) {
+    while(true){
+        cout << "Would you like to continue? y/N";
+        cin >> userResponse;
+            switch(tolower(userResponse)){
+                case 'y':
+                    return true;
+                    break;
+                case 'n':
+                    return false;
+                    break;
+                default:
+                    cout << "Please enter y/n: ";
+                    break;
+            }
+    }
+}
 
-void inMod(int& unit, int& val1, int& val2) {
+void inMod(int& unit, float& val1, float& val2) {
     cout << "What unit types would you like to convert?";
     cout << "\nType 1 for pounds and ounces to kilograms and grams.";
     cout << "\nOr type 2 for kilograms and grams to pounds and ounces.";
@@ -86,31 +96,22 @@ void inMod(int& unit, int& val1, int& val2) {
     }
 }
 
-void calcKG(int lbs, int oz) {
-    //temporary value to represent grams.
-    int grams;
-    int kg;
-    //deconpress lbs into oz.
-    oz += (lbs *16);
-    //converting ounes into grams
-    grams = (oz *28.3495);
-    kg = grams/1000;
-    grams = grams %1000;
-    //outputting conversions to the console
+void calcKG(float lbs, float oz) {
+    float grams;
+    float kg;
+    oz += (lbs * 16);
+    grams = (oz * 28.3495);
+    kg = grams / 1000;
+    grams = int(grams) % 1000;
     cout << kg << " kilograms and " << grams << " grams.";
-};
+}
 
-void calcLB(int grams, int kg) {
-    //temporary value to represent oz.
-    int oz;
-    int lbs;
-    //deconpressed kg into grams.
+void calcLB(float grams, float kg) {
+    float oz;
+    float lbs;
     grams += (kg * 1000);
-    //converting grams into ounces.
     oz = (grams * 0.035274);
-    
     lbs = oz/16;
-    oz = oz%16;
- 
-    cout << lbs << " pounds and " << oz << "ounces.";
-};
+    oz = int(oz) % 16;
+    cout << int(lbs) << " pounds and " << oz << "ounces.";
+}
