@@ -7,7 +7,7 @@ int main ()
 {
     string lastName, firstName;
 
-    //creating file in write mode(outfile mode) and input mode?
+    //creating file in write mode(outfile mode) and input mode? I don't think so.
     ofstream outfile;
     outfile.open("file.dat", ios::out | ios::in);
 
@@ -19,5 +19,15 @@ int main ()
     outfile << firstName << endl;
     outfile << lastName << endl;
 
-   return 0;
+    outfile.close();
+
+    ifstream infile;
+    infile.open("file.dat");
+
+    infile >> lastName;
+    infile >> firstName;
+
+    infile.close();
+
+    return 0;
 }
