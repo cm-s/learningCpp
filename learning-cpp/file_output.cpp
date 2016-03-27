@@ -5,7 +5,7 @@ using namespace std;
 int main ()
 {
    ofstream outfile;
-   outfile.open("file.dat", out | in | turnc);
+   outfile.open("file.dat", ios::out | ios::in);
 
    return 0;
 }
