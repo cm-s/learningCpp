@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <cstring>
 using namespace std;
 
 char convert_gene(char main_input);
@@ -19,6 +20,10 @@ int main()
 
     do {
         for (int wd = 0; wd == strlen(gene); wd++) {
+            if (isalnum(user_input[wd]) == true) {
+                is_valid = false;
+            };
+
             switch (user_input[wd]) {
                 case "A":
                     continue;
@@ -61,6 +66,8 @@ char convert_gene(char main_input) {
             case 'A':
                 main_input[itm] = 'U';
                 break;
-        }
-    }
+        };
+    };
+
+    return main_input;
 }
