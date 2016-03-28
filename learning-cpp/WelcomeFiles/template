@@ -16,12 +16,12 @@ using namespace std;
  * @return
  */
  void someFunction(int someParam);
- 
+
 int main ()
 {
-	
+
 	// objects and program instructions
-	
+
 	return 0;
 
 }
