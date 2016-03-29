@@ -15,6 +15,10 @@ int main()
     cout << "\nThis string can only be comprised of capital letters A, C, U, G or T.";
     cin >> user_input;
 
+    /*you should need to store temporary values in a placeholder
+    for legal operation on in the convert_gene function. This is
+     only a problematic and theoretical solution.*/
+
     do {
         for (int wd = 0; wd == user_input.length(); wd++) {
             if (isalnum(user_input[wd]) == true) {
