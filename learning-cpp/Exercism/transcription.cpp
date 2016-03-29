@@ -10,14 +10,15 @@ int main()
     //discovering input gene
     bool is_valid;
     string user_input;
+    char gene_creation[0] = {};
 
     cout << "Enter your gene string.";
     cout << "\nThis string can only be comprised of capital letters A, C, U, G or T.";
     cin >> user_input;
 
-    /*you should need to store temporary values in a placeholder
-    for legal operation on in the convert_gene function. This is
-     only a problematic and theoretical solution.*/
+    for (size_t it = 0; it < user_input.length(); it++) {
+        strcat(gene_creation, "0");
+    };
 
     do {
         for (int wd = 0; wd == user_input.length(); wd++) {
@@ -47,13 +48,19 @@ int main()
                     break;
             };
         };
-    } while(is_valid != false);
+    } while(is_valid != true);
+
+    /*This tidbit shows output revealing that is_valid isn't set right
+    somewhere in the program and does not function as designed.*/
+    return is_valid;//delete
 
 return 0;
-} //blocks here and up run
+} //blocks here and up run but do not return the desired values
+/*one occuring output of this code is "*** stack smashing detected ***".
+this could possibly be due to the gene_creation array size being preset to
+zero and "leaglly" having multiple values concatinated onto it.*/
 
-/*the "user_input" below can only be seen as an empty string/char, thus
-breaking the code below. There is apparently no workaround(as expected).*/
+/*this code has never been tested in harmony with the code above*/
 char convert_gene(char user_input) {
     char converted_gene = user_input;
 
