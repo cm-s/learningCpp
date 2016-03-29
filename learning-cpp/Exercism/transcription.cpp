@@ -3,13 +3,13 @@
 #include <cstring>
 using namespace std;
 
-char convert_gene(char main_input);
+char convert_gene(char user_input);
 
 int main()
 {
     //discovering input gene
-    string user_input;
     bool is_valid;
+    string user_input;
 
     cout << "Enter your gene string.";
     cout << "\nThis string can only be comprised of capital letters A, C, U, G or T.";
@@ -21,7 +21,7 @@ int main()
                 is_valid = false;
             };
 
-            switch (user_input[wd]) {
+            switch (user_input[wd]) {//breaking for good practice
                 case 'A':
                     continue;
                     break;
@@ -48,23 +48,28 @@ int main()
 return 0;
 } //blocks here and up run
 
-char convert_gene(char main_input) {
-    for (size_t itm = 0; itm < strlen(main_input); itm++) {
-        switch (main_input[itm]) {
-            case 'g':
-                main_input[itm] = 'c';
+/*the "user_input" below can only be seen as an empty string/char, thus
+breaking the code below. There is apparently no workaround(as expected).*/
+char convert_gene(char user_input) {
+    char converted_gene = user_input;
+
+    for (int itm = 0; itm == strlen(user_input); itm++) {
+
+        switch (converted_gene) {
+            case 'G':
+                strcpy(converted_gene[itm], 'C');
                 break;
-            case 'c':
-                main_input[itm] = 'G';
+            case 'C':
+                strcpy(converted_gene[itm], 'G');
                 break;
             case 'T':
-                main_input[itm] = 'A';
+                strcpy(converted_gene[itm], 'A');
                 break;
             case 'A':
-                main_input[itm] = 'U';
+                strcpy(converted_gene[itm], 'U');
                 break;
         };
     };
 
-    return main_input;
+    return converted_gene;
 }
