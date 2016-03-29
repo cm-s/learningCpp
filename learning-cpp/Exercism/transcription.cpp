@@ -15,29 +15,26 @@ int main()
     cout << "\nThis string can only be comprised of capital letters A, C, U, G or T.";
     cin >> user_input;
 
-    char gene;//try to "switch(case)" with this
-    strcat(gene, user_input)
-
     do {
-        for (int wd = 0; wd == strlen(gene); wd++) {
+        for (int wd = 0; wd == user_input.length(); wd++) {
             if (isalnum(user_input[wd]) == true) {
                 is_valid = false;
             };
 
             switch (user_input[wd]) {
-                case "A":
+                case 'A':
                     continue;
                     break;
-                case "C":
+                case 'c':
                     continue;
                     break;
-                case "U":
+                case 'U':
                     continue;
                     break;
-                case "G":
+                case 'G':
                     continue;
                     break;
-                case "T":
+                case 'T':
                     continue;
                     break;
                 default:
@@ -49,7 +46,7 @@ int main()
     } while(is_valid != false);
 
 return 0;
-}
+} //blocks here and up run
 
 char convert_gene(char main_input) {
     for (size_t itm = 0; itm < strlen(main_input); itm++) {
