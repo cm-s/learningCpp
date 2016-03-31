@@ -1,3 +1,10 @@
+/*
+ * transcription
+ * Converts a given DNA strand and returns it's compliment.
+ *
+ * Charles Stevens
+ * Date created: 3/30/16
+ */
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -11,7 +18,7 @@ int main()
     string user_input;
     bool is_valid;
 
-    cout << "Enter your gene string.";
+    cout << "Enter your gene strand.";
     cout << "\nThis string can only be letters A, C, U, G or T." << endl;
     cin >> user_input;
 
@@ -49,26 +56,32 @@ return 0;
 }
 
 void convert_gene(string user_input, bool is_valid) {
+    string rnaCompliment;
+
     if (is_valid = true)
     {
     int gene_size = sizeof(user_input)/sizeof(user_input[0]);
 
     for (int itm = 0; itm <= gene_size; itm++) {
-        switch (user_input[itm]) {
+        //cout << "run";
+        switch (toupper(user_input[itm])) {
             case 'G':
-                user_input[itm] = 'C';
+                rnaCompliment += 'C';
                 break;
             case 'C':
-                user_input[itm] = 'G';
+                rnaCompliment += 'G';
                 break;
             case 'T':
-                user_input[itm] = 'A';
+                rnaCompliment += 'A';
                 break;
             case 'A':
-                user_input[itm] = 'U';
+                rnaCompliment += 'U';
+                break;
+            case 'U':
+                rnaCompliment += 'T';
                 break;
             };
         };
-        cout << user_input;
+        cout << "The RNA compliment for your gene strand is " << rnaCompliment << "." << endl;
     };
 };
