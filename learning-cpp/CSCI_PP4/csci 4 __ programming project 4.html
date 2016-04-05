@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<!-- saved from url=(0055)http://foobt.net/fall2013/csci4_1751/labs/project4.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	
+	<link rel="stylesheet" type="text/css" href="./csci 4 __ programming project 4_files/lab.css">
+	<title>csci 4 :: programming project 4</title>
+<style id="style-1-cropbar-clipper">/* Copyright 2014 Evernote Corporation. All rights reserved. */
+.en-markup-crop-options {
+    top: 18px !important;
+    left: 50% !important;
+    margin-left: -100px !important;
+    width: 200px !important;
+    border: 2px rgba(255,255,255,.38) solid !important;
+    border-radius: 4px !important;
+}
+
+.en-markup-crop-options div div:first-of-type {
+    margin-left: 0px !important;
+}
+</style></head>
+<body>
+
+<center>
+<b>csci 4 :: programming project 4 (due by midnight on friday, dec 13)</b><br>
+</center>
+
+<div class="description">
+<span class="sectiontitle">Submitting your work:</span>
+	<p>
+		Complete this exercise on your own.
+	</p>
+	<p>
+		Solve the problem described below by designing, implementing, and testing a 
+		Python program.
+	</p>
+	<p>
+		Email your Python code to the instructor at jboydt@foobt.net before the deadline.
+	</p>
+</div>
+
+<div class="description">
+<span class="sectiontitle">Description:</span>
+
+	<p>
+		For this project, you will (1) design and (2) and implement a simple adventure game. You can choose 
+		any theme for your game you want -- fighting monsters and collecting gold, picking up and eating candy, 
+		flying a spaceship to different planets to trade goods, raising animals on a farm, tutoring a student for school 
+		-- any theme you want, as long as your game addresses the technical requirements (listed below).
+	</p>
+	<p>
+		We will share game design ideas and theme ideas together in class, so do not worry if you have not played or created 
+		a game like this before.
+	</p>
+	<p>
+		Your program will, ultimately, be designed and implemented as an object-oriented system. It is assumed that when 
+		you start you do not know object-orientation, but do not let that stop you -- you can implement the program as you 
+		have implemented your other programs to date, and translate it later into an object-oriented system. We will work 
+		together in class so you will know how to do this.
+	</p>
+	<p>
+		Your program will have the following components:
+	</p>
+	<ul>
+		<li>
+			a Player class (in a file Player.py), with the following:
+			<ul>
+				<li>
+					a constructor that accepts a name for the player and initializes attributes to reasonable start values
+				</li>
+				<li>
+					a dictionary to store: the player name, points/gold/candy (based on your chosen theme), plus any 
+					other player attributes you want to include
+				</li>
+				<li>
+					a list to store items found, or rooms visited, or whatever you choose to store in the list
+				</li>
+				<li>
+					methods to set the various attributes, get the various attributes, add items to the list, view 
+					items in the list
+				</li>
+				<li>a method to print all of the values of the player attributes and all of the items in the list</li>
+				<li>other methods as needed to implement your design</li>
+			</ul>
+		</li>
+		<li>
+			a Room class (in a file Room.py), with the following:
+			<ul>
+				<li>
+					a constructor that accepts a name for the player and initializes attributes to reasonable start values
+				</li>
+				<li>
+					a name
+				</li>
+				<li>
+					a description
+				</li>
+				<li>
+					methods to set the name and description, get the name and description
+				</li>
+				<li>
+					a method representing the primary activity of the room, such as fighting a monster, or solving a puzzle, 
+					or playing a game (for example, a number guessing game), or whatever activity is appropriate for your theme
+				</li>
+				<li>other methods as needed to implement your design</li>
+			</ul>
+		</li>
+		<li>
+			a Game driver (in a file Game.py; this is where your main menu function will be) that:
+			<ul>
+				<li>creates an instance of Player</li>
+				<li>uses a tuple to create a minimum of three (3) instances of Rooms</li>
+				<li>displays the main menu and allows the player to interact with the game</li>
+			</ul>
+		</li>
+	</ul>
+ 	<p>
+		Document all of your Python files using <a href="http://foobt.net/fall2013/csci4_1751/files/basic_module.txt">this sample</a> as a guide.
+	</p>
+    <p>
+        You can find a starter implementation <a href="http://foobt.net/fall2013/csci4_1751/labs/project4data">here</a> (you will need all three files -- run Game.py).
+    </p>
+</div>
+
+<div class="objectiveslist">
+<span class="sectiontitle">Objectives:</span>
+	<ul>
+		<li>practice defining and using functions</li>
+		<li>practice using lists</li>
+		<li>use a dictionary to store and manage data</li>
+		<li>use a tuple to store and access data</li>
+		<li>design and implement classes</li>
+		<li>create instances of classes</li>
+		<li>use import statements to connect your Python files</li>
+	</ul>
+</div>
+
+<div class="objectiveslist">
+<span class="sectiontitle">Requirements:</span>
+	<ul>
+		<li>technical requirements:
+			<ul>
+				<li>
+					[50 points] all of your source files must be documented correctly (see 
+					<a href="http://foobt.net/fall2013/csci4_1751/files/basic_module.txt">the basic_module example</a>) 
+					
+				</li>
+				<li>[50 points] your program must run without errors</li>
+				<li>[50 points] all of your user input handling must be robust</li>
+				<li>
+					[50 points] all of your program outputs should be neatly and consistently 
+					formatted using the string <i>format</i> when required
+				</li>
+			</ul>
+		</li>
+		<li>feature requirements:
+			<ul>
+				<li>
+					[100 points] implement a Player class to the minimums described above
+				</li>
+				<li>
+					[100 points] implement a Room class to the minimums described above
+				</li>
+				<li>
+					[100 points] implement a Game driver that creates a Player object, creates a minimum 
+					of three (3) Room objects and stores them in a tuple, displays the main menu, and allows 
+					the user to access all of the game's activities
+				</li>
+				<li>
+					[100 points] the game is reasonably playable (instructor discretion)
+				</li>
+				<li>
+					NOTE: you may implement as many additional functions as you need to complete the program based 
+					on your design
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+
+<div class="objectiveslist">
+<span class="sectiontitle">Challenge yourself:</span>
+	<p>
+		If you have time, enhance your program to include one or more of the following features:
+	</p>
+	<ul>
+		<li>
+			[50 points] store and retrieve player data to and from a text file
+		</li>
+	</ul>
+</div>
+
+<div class="description">
+<span class="sectiontitle">Total points for this programming project:</span>
+	<p>600 points</p>
+</div>
+
+
+</body></html>

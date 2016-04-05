@@ -1,0 +1,259 @@
+#ptitle {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#newcode {
+	color: #339900;
+	font-weight: bold;
+	font-size: larger;
+	margin: 0em 0em 0em 1em;
+}
+
+#redhilite {
+	color: #ff3333;
+}
+
+#bluehilite {
+	color: #3366cc;
+}
+
+.hilite {
+	background-color: #d3d3d3;
+}
+
+#output {
+	color:  #3366cc;
+	font-weight: bold;
+    font-size: larger;
+    margin: 0em 0em 0em 1em;
+}
+
+#tabtwo {
+	margin: 0em 0em 0em 3em;
+}
+
+#tabone {
+	margin: 0em 0em 0em 2em;
+}
+
+span.sectiontitle {
+	font-weight: bold;
+}
+
+table.assignments
+{
+	text-align: center;
+	margin: auto;
+	width: 85%;
+	border: 1px solid black;
+}
+
+table.assignments th
+{
+	border: 1px solid black;
+}
+
+table.assignments td
+{
+	border: 1px solid black;
+}
+
+ol {
+	margin: .5em 0em .5em 0em;
+}
+
+ol.loweralpha {
+	list-style: lower-alpha;
+}
+
+li.question {
+	margin:  0em 0em 1em 0em;
+}
+
+.exercise {
+	margin: 2em 0em 1em 0em;
+	border-top-style: solid;
+}
+
+.objectiveslist {
+	margin: 2em 0em 1em 0em;
+	border-top-style: solid;
+}
+
+.objectiveslist ul {
+	margin: 0em 0em 0em 1em;
+}
+
+.objectiveslist li {
+}
+
+.description {
+	margin: 2em 0em 1em 0em;
+	border-top-style: solid;
+}
+
+.description p {
+	margin: 0em 0em 1em 1em;
+}
+
+#part1 {
+	border: 1px solid black;
+}
+
+#part2 {
+	border: 1px solid black;
+}
+
+#extra {
+	border: 1px solid black;
+}
+
+img.source_code {
+	border: 1px dashed black;
+	margin: 5px auto 5px auto;
+}
+
+.codesnippet {
+	margin-left: 25px;
+	font-weight: bold;
+}
+
+.centered {
+	text-align: center;
+	margin: auto;
+}
+
+table.assignment_output {
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 10px;
+	width: 90%;
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+table.assignment_output td,th {
+	border: 1px solid black;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+td.number {
+	border: 1px solid black;
+	width: 10%;
+	text-align: center;
+}
+
+td.answer {
+	border: 1px solid black;
+	width: 90%;
+}
+
+td.comments {
+	border: 1px solid black;
+	width: 90%;
+	height: 3em;
+}
+
+td.points {
+	border: 1px solid black;
+	width: 10%;
+	text-align: right;
+}
+
+td.right {
+	border: 1px solid black;
+	text-align: right;
+}
+
+/* GAME REVIEW FORM STYLING */
+
+span.explanation {
+	font-size: small;
+	font-style: italic;
+	font-weight: normal;
+}
+
+td.field_label {
+	padding-bottom: 5px;
+	width: 40%;
+	font-weight: bold;
+	text-align: right;
+	vertical-align: top;
+	border-bottom: 1px solid #000000;
+}
+
+td.field_field {
+	padding-bottom: 5px;
+	width: 60%;
+	border-bottom: 1px solid #000000;
+	vertical-align: top;
+}
+
+td.field_name {
+	vertical-align: top;
+	border: 1px solid black;
+	width: 25%;
+}
+
+td.field_comments {
+	vertical-align: top;
+	border: 1px solid black;
+	width: 75%;
+}
+
+table.game_review {
+	width: 75%;
+	margin-left: 12px;
+}
+
+table.project_requirements {
+	width: 75%;
+	margin-left: 12px;
+}
+
+table.project_requirements td {
+	vertical-align: top;
+}
+
+td.td_label {
+	text-align: right;
+	padding-right: 10px;
+}
+
+.limit {
+	color: #FF0000;
+}
+
+ol.questions li {
+	margin-bottom: 10px;
+}
+
+pre {
+	white-space: -moz-pre-wrap; /* Mozilla, supported since 1999 */
+	white-space: -pre-wrap; /* Opera 4 - 6 */
+	white-space: -o-pre-wrap; /* Opera 7 */
+	white-space: pre-wrap; /* CSS3 - Text module (Candidate Recommendation) http://www.w3.org/TR/css3-text/#white-space */
+	word-wrap: break-word; /* IE 5.5+ */
+}
+
+#all_requirements {
+	margin-left: 3em;
+}
+
+.update1 {
+	background: #DCDCDC;
+}
+
+legend.bold {
+	font-weight: bold;
+}
+
+.opt_reading {
+	background-color: #FFFF99;
+}
+
+.req_reading {
+	background-color: #99FF99;
+}
