@@ -57,7 +57,7 @@ void grid_constructor(int grid_size, string gridState, int x, int y) {
     };
 };//function complete
 
-void character_dynamic(char& palyer, string& grid, char& move_direction) {
+void character_dynamic(char& player, string& grid, char& move_direction) {
     //place character in center initially
     grid[(grid_size -1)/2][(grid_size -1)/2] = '&';
     grid_constructor(grid_size, grid, x, y);
