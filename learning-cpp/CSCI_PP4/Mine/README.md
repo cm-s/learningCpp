@@ -1,8 +1,20 @@
-#This file obviously needs to be updated
+##A short list of the fixes needed for the "complete" functions.
 
-A quick list of things that need to be worked on in the program:
-1. make setKey() value diverse.
-2. create functional random number generator.
-3. fix spacing and numbering.
-4. remove the "that is not a move" when initializing any grid.
-5. overload character_dynamic instead of redeclaring it.
+1. Make setKey() value diverse.
+2. Create functional random number generator.
+3. Fix spacing and numbering.
+4. Remove the "that is not a move" when initializing any grid.
+5. Overload character_dynamic instead of redeclaring it.
+
+##Here's a list of features that I would like to be implemented:
+
+1. Movement system
+2. Random structure generation
+3. Gate mechanism's
+4. Level swapping
+5. Enemies
+6. Health system
+7. Power-ups
+8. Final Boss
+9. Dangerous obstacles
+10. Puzzles
