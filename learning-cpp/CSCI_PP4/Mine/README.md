@@ -18,3 +18,5 @@
 8. Final Boss
 9. Dangerous obstacles
 10. Puzzles
+
+_Note: The adv_game.cpp file was significantly developed within a derivative file called alternative.cpp._
