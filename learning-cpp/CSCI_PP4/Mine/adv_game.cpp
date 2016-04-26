@@ -1,3 +1,11 @@
+/*
+ * adv_game (v1.0.1)
+ * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
+ * in order to get to the next level or win the game.
+ *
+ * CMS
+ * Date created: 4-26-16, 10:41am
+ */
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -18,6 +26,7 @@ private:
 class player
 {
 public:
+    bool firstPlay = true;
     int x = 10;
     int y = 10;
     char skin = '&';
@@ -49,12 +58,12 @@ public:
     void unlock(char current_grid[20][20], player& character) {
         if (character.gateSignature == "32") {
             if (key == character.keeper1key.getKey()) {
-                current_grid[x][y] = ' ';
+                current_grid[x][y] = '%';
                 x = 0; y = 0;
             };
         } else if (character.gateSignature == "23") {
             if (key == character.keeper2Key.getKey()) {
-                current_grid[x][y] = ' ';
+                current_grid[x][y] = '%';
                 x = 0; y = 0;
             };
         };
@@ -62,6 +71,7 @@ public:
 };
 
 /*Random functions*/
+
 int flip(); int flip() { return rand() %2; };
 int randomCell(); int randomCell() { return rand() % 19 + 3; };
 
@@ -105,7 +115,7 @@ const char boulder[5][5] = {
     {' ','#','#','#',' '},
     {'#','#','#','#','#'},
     {'#','#','^','W','W'},
-    {'#','#','#','#','#'},
+    {'#','#','^','#','#'},
     {' ','#','#','#',' '},
 };
 const char initial_grid[20][20] = {
@@ -182,27 +192,29 @@ short int game_level = 1;
 
 /*INITIALIZING END*/
 
-//generating structures
-gen_struct(current_grid, grid_size, cave);//"boulder" or "cave" template. This needs to be random.
-//moving player
-player character;
+gen_struct(current_grid, grid_size, cave);//generating structure
+player character;//init player
 
-cout << "\nUse the WASD keys to move your character." << endl;
-current_grid[character.x][character.y] = character.skin;
-
+cout << "\nUse the WASD keys to move your character.";
+cout << "\nUse the C key to enter a command." << endl;
+move_direction = 'w';
 do {
     character.prev_x_coord = character.x;
     character.prev_y_coord = character.y;
-    make_space();
+    if (character.firstPlay == false) {
+        make_space();
+    };
+    character.firstPlay = false;
     action_input(character, move_direction);
     movement_handler(current_grid, character, grid_size, move_direction, gameOver);
 } while(gameOver == false);
 
 
     //setup level two
+    move_direction = 's';
     gameOver = false;
+    character.firstPlay = true;
     levelConstruct(levelTwo, current_grid);
-    cout << endl; cout << "Level Two" << endl;
     game_level = 2; character.level = 2;
 
     lock gatekeeper1; gatekeeper1.x = 11; gatekeeper1.y = 16;
@@ -212,21 +224,25 @@ do {
     current_grid[gatekeeper1.x][gatekeeper1.y] = gatekeeper1.skin;
     current_grid[gatekeeper2.x][gatekeeper2.y] = gatekeeper2.skin;
 
-    cout << "\nUse the WASD keys to move your character." << endl;
-    current_grid[character.x][character.y] = character.skin;
-
     do {
         character.prev_x_coord = character.x;
         character.prev_y_coord = character.y;
         make_space();
+        if (character.firstPlay == true) {
+            cout << endl; cout << "Level Two" << endl;
+        };
+        character.firstPlay = false;
         action_input(current_grid, character, gatekeeper1, gatekeeper2, move_direction);
         gate_check(current_grid, character, gatekeeper1, gatekeeper2);
         movement_handler(current_grid, character, grid_size, move_direction, gameOver);
+        //above function ends with stack smashing as of versions under 1.0.1. Newest errors below.
+        /* *** Error in `./a.out': double free or corruption (out): 0x00007ffc30ce8c90 *** Aborted (core dumped) */
+        /* *** Error in `./a.out': munmap_chunk(): invalid pointer: 0x00007ffdd6f71920 *** Aborted (core dumped) */
     } while(gameOver == false);
-
-    //above function ends with stack smashing
-
+    //cleaning up for level three
+    delete &gatekeeper1; delete &gatekeeper2;
         //level three code will go here
+
 
 return 0;
 };
@@ -304,7 +320,8 @@ void action_input(char current_grid[20][20], player& character, lock& gatekeeper
             character.y += 1;
             break;
         case 'C':
-            cout << "\nEnter and action: " << endl;
+            cout << endl; cout << endl; cout << endl;
+            cout << "\nEnter an action: " << endl;
             cin >> command;
             if (command == "unlock") {
                 if (character.gateSignature == "32") {
