@@ -1,10 +1,7 @@
 ##A short list of the fixes needed for the "complete" functions.
 
-1. Make setKey() value diverse.
-2. Create functional random number generator.
-3. Fix spacing and numbering.
-4. Remove the "that is not a move" when initializing any grid.
-5. Overload character_dynamic instead of redeclaring it.
+1. Add parameters to structure generation engine.
+2. Possibly enable keypress only to move character.
 
 ##Here's a list of features that I would like to be implemented:
 
@@ -19,4 +16,4 @@
 9. Dangerous obstacles
 10. Puzzles
 
-_Note: The adv_game.cpp file was significantly developed within a derivative file called alternative.cpp._
+_Note: The adv_game.cpp file was significantly developed within a derivative file called alternative.cpp, also created by me._
