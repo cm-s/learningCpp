@@ -1,4 +1,15 @@
+/*
+    This code is the first and only iteration of the player_enemy files that were previously included in the main program.
+    This code exists here only to serve as history for the new objs.cpp and objs.h files.
+*/
 #include "player_enemy.h"
+
+player::player() {};
+player::~player() {};
+
+enemy::enemy(double dmg, double hp): damage(dmg), life(hp) {
+    cout << "\nDEBUG MESSAGE: Enemy object created with damage " << getDamage() << " and life " << getLife() << endl;
+};
 
 void enemy::auto_move(char current_grid[20][20], player& character) {
         if ((character.x % x <= 1 && character.x / x <= 1) && (character.y % y <= 1 && character.y / y <= 1)) {
@@ -28,3 +39,5 @@ void enemy::looseLife(char current_grid[20][20], player character) {
             skin = '#';
         };
     };
+
+enemy::~enemy() {};

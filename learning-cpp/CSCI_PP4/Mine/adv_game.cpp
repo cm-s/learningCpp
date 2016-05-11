@@ -1,7 +1,7 @@
 /*
- * adv_game (v3.5.2)
+ * adv_game (v4.6.3)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
- * in order to get to the next level or win the game.
+ * in order to get to the next level and ultimately win the game.
  *
  * CMS
  * Date created: 4-26-16, 10:41am
@@ -11,58 +11,15 @@
 #include <cstring>
 #include <time.h>
 #include <stdlib.h>
-#include "external/player_enemy.h"
+#include "external/objs.h"
 using namespace std;
-
-class lock
-{
-public:
-    int key;
-    int x, y;
-    int extX, extY;
-    char skin = '@';
-    string gateSignature;
-    bool unlocked = false;
-    void detect(char current_grid[20][20], player& character) {
-        if (x == character.x && y == character.y) {
-            cout << "\nIt looks like you can insert a key." << endl;
-            cout << "\nThe Number on the lock says: " << key << endl;
-            character.x = character.prev_x_coord;
-            character.y = character.prev_y_coord;
-            character.gateSignature = gateSignature;
-        };
-    };
-    void unlock(char current_grid[20][20], player& character) {
-        if (key == character.keeper1key.getKey()) {
-            current_grid[x][y] = '%';
-            unlocked = true;
-            x = 0; y = 0;
-        };
-        if (key == character.keeper2Key.getKey()) {
-            current_grid[x][y] = '%';
-            unlocked = true;
-            x = 0; y = 0;
-        };
-    };
-};
-
-class box
-{
-public:
-    int x, y;
-    char approach;
-    void move() {
-        if (approach == 'l') { y += 1; };
-        if (approach == 'r') { y -= 1; };
-        if (approach == 'd') { x -= 1; };
-        if (approach == 'u') { x += 1; };
-    };
-};
 
 /*Random functions*/
 int flip(); int flip() { return rand() %2; };
 int randomCell(); int randomCell() { srand(time(NULL));
                                      return rand() % 13 + 4; };
+
+void welcomeSequence();
 
 void item_pickup(player& character, char current_grid[20][20], bool& gameOver, int keyring[10][2], int keySet, bool do_rand);
 
@@ -76,9 +33,9 @@ void make_space();
 
 void action_input(player& character, char move_direction);
 
-void action_input(char current_grid[20][20], player& character, lock& gatekeeper1, lock& gatekeeper2, char move_direction);
+void action_input(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2, char move_direction);
 
-void gate_check(char current_grid[20][20], player& character, lock gatekeeper1, lock gatekeeper2);
+void gate_check(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2);
 
 void step(char current_grid[20][20], player& character, int grid_size, char& move_direction);
 
@@ -88,7 +45,7 @@ bool detected_in(char current_grid[20][20], player character, int LTstart, int a
 
 void is_alive(player character, bool& gameOver);
 
-void enemy_action(char current_grid[20][20], enemy& MonsterOne, player& character);
+void enemy_action(char current_grid[20][20], enemy* MonsterOne, player& character);
 
 char justify_move(char current_grid[20][20], player subject);
 
@@ -100,7 +57,7 @@ int main()
 {
 /*INITIALIZING BEGIN*/
 
-//grid imports
+//grid initializations
 
 const char cave[5][5] = {
     {'#','#','#','#','#'},
@@ -146,18 +103,18 @@ const char levelTwo[20][20] = {
     {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
     {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
     {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '@', '=', '=', '@', '#', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-    {'#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '+', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-    {'#', ' ', ' ', 'X', ' ', ' ', ' ', '#', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', 'T', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '@', '=', '=', '@', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '+', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+    {'#', ' ', ' ', 'X', ' ', ' ', '#', ' ', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', '#'},
     {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
 };
 const char levelThree[20][20] = {           /*fist key here*/
@@ -206,6 +163,7 @@ char current_grid[20][20] = {
 };
 
 //non-grid variables
+string input; //for the str_to_int() fxn
 const int grid_size = 20;
 char move_direction;
 bool gameOver = false;
@@ -219,14 +177,16 @@ int keyring[10][2] = {
 };
 /*INITIALIZING END*/
 
+welcomeSequence();
+
 gen_struct(current_grid, cave);//generating structure
 player character;//init player
-
 
 cout << "\nUse the WASD keys to move your character.";
 cout << "\nUse the C key to enter a command." << endl;
 move_direction = 'w';
-enemy MonsterOne;
+enemy *MonsterOne;
+MonsterOne = new enemy(25, 100);
 do {
     character.prev_x_coord = character.x;
     character.prev_y_coord = character.y;
@@ -235,15 +195,15 @@ do {
     };
     character.firstPlay = false;
     action_input(character, move_direction);
-    if (detected_in(current_grid, character, 10, 3) == true) {//this block needs to be a function
-        if (MonsterOne.entry != true) {
-            MonsterOne.x = 4; MonsterOne.y = 4;
-            current_grid[MonsterOne.x][MonsterOne.y] = MonsterOne.skin;
-            MonsterOne.entry = true;
+    if (detected_in(current_grid, character, 3, 2) == true) {//this block needs to be a function
+        if (MonsterOne -> entry != true) {
+            MonsterOne -> x = 4; MonsterOne -> y = 4;
+            current_grid[MonsterOne -> x][MonsterOne -> y] = MonsterOne -> skin;
+            MonsterOne -> entry = true;
         };
     };
     if (justify_move(current_grid, character) == 'M') {
-        MonsterOne.looseLife(current_grid, character);
+        MonsterOne -> looseLife(current_grid, character);
         cout << "\nYou've hit the enemy!" << endl;
         obj_reset(current_grid, character, grid_size, move_direction, 'M');
     };
@@ -258,18 +218,19 @@ do {
 } while(gameOver == false);
 
     //setup level two
+    delete MonsterOne; MonsterOne = NULL;
     move_direction = 's';
     gameOver = false;
     character.firstPlay = true;
     levelConstruct(levelTwo, current_grid);
     game_level = 2;
 
-    lock gatekeeper1; gatekeeper1.x = 11; gatekeeper1.y = 16; gatekeeper1.extX = 11; gatekeeper1.extY = 15;
-    gatekeeper1.key = keyring[0][0]; gatekeeper1.gateSignature = std::to_string(keyring[0][0]).erase(0, 1);
-    lock gatekeeper2; gatekeeper2.x = 11; gatekeeper2.y = 13; gatekeeper2.extX = 11; gatekeeper2.extY = 14;
-    gatekeeper2.key = keyring[0][1]; gatekeeper2.gateSignature = std::to_string(keyring[0][1]).erase(0, 1);
-    current_grid[gatekeeper1.x][gatekeeper1.y] = gatekeeper1.skin;
-    current_grid[gatekeeper2.x][gatekeeper2.y] = gatekeeper2.skin;
+    lock *gatekeeper1; gatekeeper1 = new lock(); gatekeeper1 -> x = 11; gatekeeper1 -> y = 16; gatekeeper1 -> extX = 11; gatekeeper1 -> extY = 15;
+    gatekeeper1 -> key = keyring[0][0]; gatekeeper1 -> gateSignature = std::to_string(keyring[0][0]).erase(0, 1);
+    lock *gatekeeper2; gatekeeper2 = new lock(); gatekeeper2 -> x = 11; gatekeeper2 -> y = 13; gatekeeper2 -> extX = 11; gatekeeper2 -> extY = 14;
+    gatekeeper2 -> key = keyring[0][1]; gatekeeper2 -> gateSignature = std::to_string(keyring[0][1]).erase(0, 1);
+    current_grid[gatekeeper1 -> x][gatekeeper1 -> y] = gatekeeper1 -> skin;
+    current_grid[gatekeeper2 -> x][gatekeeper2 -> y] = gatekeeper2 -> skin;
 
     do {
         character.prev_x_coord = character.x;
@@ -289,16 +250,18 @@ do {
         };
     } while(gameOver == false);
         //cleaning up for level three
-
+        delete character.keeper1key; delete character.keeper2key; character.keeper1key = NULL; character.keeper2key = NULL;
         move_direction = 'w';
         gameOver = false;
         character.firstPlay = true;
+        delete character.keeper1key; delete character.keeper2key;
         levelConstruct(levelThree, current_grid);
         game_level = 3;
 
-        gatekeeper1.x = 9; gatekeeper1.y = 4;
-        gatekeeper1.key = keyring[1][0]; gatekeeper1.gateSignature = std::to_string(keyring[1][0]).erase(0, 1);
-        current_grid[gatekeeper1.x][gatekeeper1.y] = gatekeeper1.skin;
+        character.keeper1key = new item(1); character.keeper2key = new item(2);
+        gatekeeper1 -> x = 9; gatekeeper1 -> y = 4;
+        gatekeeper1 -> key = keyring[1][0]; gatekeeper1 -> gateSignature = std::to_string(keyring[1][0]).erase(0, 1);
+        current_grid[gatekeeper1 -> x][gatekeeper1 -> y] = gatekeeper1 -> skin;
 
         box box1; box1.x = 2; box1.y = 5; current_grid[box1.x][box1.y] = 'H';
         box box2; box2.x = 3; box2.y = 8; current_grid[box2.x][box2.y] = 'H';
@@ -344,6 +307,40 @@ return 0;
 
 /*END OF MAIN*/
 
+void welcomeSequence() {
+    string command;
+    cout << "#           Main Menu          #" << endl;//all lines allign with this one
+    cout << "# Type \"options\" for options   #" << endl;
+    cout << "# Type \"commands\" for commands #" << endl;
+    cout << "# Type \"go\" to start the game  #" << endl;
+    cin >> command;
+    if (command == "commands") {
+        string consent;
+        make_space();
+        cout << "\nLevel one has no commands." << endl;
+        cout << "\nList of commands for level two is as follows:" << endl;
+            cout << "\n    \"unlock\": unlocks a gate.";
+            cout << "\n    \"keys\": tells you what keys you have.";
+            cout << endl;
+        cout << "\nList of commands for level three is as follows:" << endl;
+            cout << "\n    \"unlock\": unlocks a gate after you've tried moving through it.";
+            cout << "\n    \"keys\": tells you what keys you have.";
+            cout << "\n    \"open\": opens a door after you've tried to move though it.";
+            cout << endl;
+
+        cout << "\nOkay? (type anything)" << endl;
+        cin >> consent;
+        make_space();
+        welcomeSequence();
+    } else if (command == "go") {
+        make_space();
+    } else {
+        make_space();
+        cout << "\nTry Typing something else." << endl;;
+        welcomeSequence();
+    };
+};
+
 void display_grid(char current_grid[20][20], int grid_size) {
     for (size_t row =0; row <= (grid_size -1); row++) {
         for (size_t col =0; col <= (grid_size -1); col++) {
@@ -372,19 +369,19 @@ void item_pickup(player& character, char current_grid[20][20], bool& gameOver, i
     switch(current_grid[character.x][character.y]) {
         case '^':
             if (do_rand == true) {
-                if (flip() == 0 && character.keeper1key.id != std::to_string(keyring[keySet][0]).erase(0, 1)) {
-                    character.keeper1key.setKey(keyring[keySet][0]);
-                    character.keeper1key.id = std::to_string(keyring[keySet][0]).erase(0, 1);
-                    printk = character.keeper1key.getKey();
+                if (flip() == 0 && character.keeper1key -> id != std::to_string(keyring[keySet][0]).erase(0, 1)) {
+                    character.keeper1key -> setKey(keyring[keySet][0]);
+                    character.keeper1key -> id = std::to_string(keyring[keySet][0]).erase(0, 1);
+                    printk = character.keeper1key -> getKey();
                 } else {
-                    character.keeper2Key.setKey(keyring[keySet][1]);
-                    character.keeper2Key.id = std::to_string(keyring[keySet][1]).erase(0, 1);
-                    printk = character.keeper2Key.getKey();
+                    character.keeper2key -> setKey(keyring[keySet][1]);
+                    character.keeper2key -> id = std::to_string(keyring[keySet][1]).erase(0, 1);
+                    printk = character.keeper2key -> getKey();
                 };
             } else {
-                character.keeper1key.setKey(keyring[1][0]);
-                character.keeper1key.id = std::to_string(keyring[1][0]).erase(0, 1);
-                printk = character.keeper1key.getKey();
+                character.keeper1key -> setKey(keyring[1][0]);
+                character.keeper1key -> id = std::to_string(keyring[1][0]).erase(0, 1);
+                printk = character.keeper1key -> getKey();
             };
             cout << "\nYou found a key. The number " << printk << " is on it." << endl;
             break;
@@ -396,21 +393,20 @@ void item_pickup(player& character, char current_grid[20][20], bool& gameOver, i
             character.gainLife(10);
             cout << "\nYou have found a health charm-shard." << endl;
             cout << "\nYour health is now at " << character.getLife() << endl;
+            break;
+        case 'T':
+            character.setDamage(50);
+            cout << "\nYou've found a sword! Your damage has increased to " << character.getDamage() << "." << endl;
+            break;
     };
 };
 
 bool detected_in(char current_grid[20][20], player character, int LTstart, int area) {
-    size_t col;
-    size_t row;
-    for (col = 0;col < area; col++) {
-        for (row = 0;row < area; row++) {
-            if (current_grid[LTstart +col][LTstart +row] == current_grid[character.x][character.y]) {
-                return true;
-            };
-        };
+    for (size_t col = 0;col < area; col++) {
+    for (size_t row = 0;row < area; row++) {
+        if (current_grid[LTstart +col][LTstart +row] == character.skin) {return true; }
+        else if ((col == area) && (row == area)) { return false; };
     };
-    if ((col = area) || (row = area)) {
-        return false;
     };
 };
 
@@ -428,7 +424,7 @@ void make_space() {
     };
 };
 
-void action_input(char current_grid[20][20], player& character, lock& gatekeeper1, lock& gatekeeper2, char move_direction) {
+void action_input(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2, char move_direction) {
     string command;
     switch (toupper(move_direction)) {
         case 'W':
@@ -448,33 +444,33 @@ void action_input(char current_grid[20][20], player& character, lock& gatekeeper
             cout << "\nEnter an action: " << endl;
             cin >> command;
             if (command == "unlock") {
-                if (character.gateSignature == gatekeeper1.gateSignature) {
-                    gatekeeper1.unlock(current_grid, character);
-                    if ((gatekeeper2.unlocked == true) && (gatekeeper1.unlocked == true)) {
-                        current_grid[gatekeeper1.extX][gatekeeper1.extY] = '|';
-                        current_grid[gatekeeper2.extX][gatekeeper2.extY] = '|';
+                if (character.gateSignature == gatekeeper1 -> gateSignature) {
+                    gatekeeper1 -> unlock(current_grid, character);
+                    if ((gatekeeper2 -> unlocked == true) && (gatekeeper1 -> unlocked == true) && (character.keeper2key -> id != "00")) {
+                        current_grid[gatekeeper1 -> extX][gatekeeper1 -> extY] = '|';
+                        current_grid[gatekeeper2 -> extX][gatekeeper2 -> extY] = '|';
                     };
-                } else if (character.gateSignature == gatekeeper2.gateSignature) {
-                    gatekeeper2.unlock(current_grid, character);
-                    if ((gatekeeper2.unlocked == true) && (gatekeeper1.unlocked == true)) {
-                        current_grid[gatekeeper1.extX][gatekeeper1.extY] = '|';
-                        current_grid[gatekeeper2.extX][gatekeeper2.extY] = '|';
+                } else if (character.gateSignature == gatekeeper2 -> gateSignature) {
+                    gatekeeper2 -> unlock(current_grid, character);
+                    if ((gatekeeper2 -> unlocked == true) && (gatekeeper1 -> unlocked == true)) {
+                        current_grid[gatekeeper1 -> extX][gatekeeper1 -> extY] = '|';
+                        current_grid[gatekeeper2 -> extX][gatekeeper2 -> extY] = '|';
                     };
                 } else {
                     cout << "\nThere isn't a gate." << endl;
                 };
             } else if (command == "keys") {
-                if ((character.keeper1key.id != "00") || (character.keeper2Key.id != "00")) {
+                if ((character.keeper1key -> id != "00") || (character.keeper2key -> id != "00")) {
                     cout << "\nYou have key ";
                 } else { cout << "\nYou have no keys."; };
-                if (character.keeper1key.id != "00") {
-                    cout << character.keeper1key.getKey();
-                    if (character.keeper2Key.id != "00") {
-                        cout << " and key " << character.keeper2Key.getKey() << ".";
+                if (character.keeper1key -> id != "00") {
+                    cout << character.keeper1key -> getKey();
+                    if (character.keeper2key -> id != "00") {
+                        cout << " and key " << character.keeper2key -> getKey() << ".";
                     } else { cout << "."; };
                 } else {
-                    if (character.keeper2Key.id != "00") {
-                        cout << character.keeper2Key.getKey() << ".";
+                    if (character.keeper2key -> id != "00") {
+                        cout << character.keeper2key -> getKey() << ".";
                     };
                 };
                 cout << endl;
@@ -506,17 +502,17 @@ void action_input(player& character, char move_direction) {
             character.y += 1;
             break;
         default:
-            cout << "\nThat is not a move.";
+            cout << "\nThat is not a move." << endl;
             break;
     };
 };
 
-void gate_check(char current_grid[20][20], player& character, lock gatekeeper1, lock gatekeeper2) {
+void gate_check(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2) {
     if (current_grid[character.x][character.y] == '@') {//maybe repalce the "if()" with a single function later
-        if ((character.x == gatekeeper1.x) && (character.y == gatekeeper1.y)) {
-            gatekeeper1.detect(current_grid, character);
+        if ((character.x == gatekeeper1 -> x) && (character.y == gatekeeper1 -> y)) {
+            gatekeeper1 -> detect(current_grid, character);
         } else {
-            gatekeeper2.detect(current_grid, character);
+            gatekeeper2 -> detect(current_grid, character);
         };
     };
 };
@@ -548,12 +544,12 @@ void is_alive(player character, bool& gameOver) {
     };
 };
 
-void enemy_action(char current_grid[20][20], enemy& MonsterOne, player& character) {
-    if (MonsterOne.entry == true) {
-        MonsterOne.prev_x_coord = MonsterOne.x; MonsterOne.prev_y_coord = MonsterOne.y;
-        MonsterOne.auto_move(current_grid, character);
-        current_grid[MonsterOne.x][MonsterOne.y] = MonsterOne.skin;
-        current_grid[MonsterOne.prev_x_coord][MonsterOne.prev_y_coord] = ' ';
+void enemy_action(char current_grid[20][20], enemy* MonsterOne, player& character) {
+    if (MonsterOne -> entry == true) {
+        MonsterOne -> prev_x_coord = MonsterOne -> x; MonsterOne -> prev_y_coord = MonsterOne -> y;
+        MonsterOne -> auto_move(current_grid, character);
+        current_grid[MonsterOne -> x][MonsterOne -> y] = MonsterOne -> skin;
+        current_grid[MonsterOne -> prev_x_coord][MonsterOne -> prev_y_coord] = ' ';
     };
 };
 
