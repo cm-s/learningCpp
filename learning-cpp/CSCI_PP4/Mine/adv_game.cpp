@@ -1,5 +1,5 @@
 /*
- * adv_game (v4.6.3)
+ * adv_game (v6.7.4)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -12,44 +12,157 @@
 #include <time.h>
 #include <stdlib.h>
 #include "external/objs.h"
+#include "external/console_reader.h"
 using namespace std;
 
 /*Random functions*/
+/**
+ * Function returning either zero or a number higher than zero and no higher than one with a fifty percent
+ * chance of either outcome.
+ *
+ * @return the random number.
+ */
 int flip(); int flip() { return rand() %2; };
+/**
+ * Function for generating a random number between thirteen and four.
+ *
+ * @return the random number.
+ */
 int randomCell(); int randomCell() { srand(time(NULL));
                                      return rand() % 13 + 4; };
 
-void welcomeSequence();
-
+ /**
+  * Method handling the printing and basic control of the main menu.
+  *
+  * @param game level variable.
+  * @param input reading object.
+  */
+void welcomeSequence(short int game_level, InputReader* cinreader);
+/**
+ * Logic for handling the picking up of items within the game.
+ *
+ * @param player picking up "objects".
+ * @param grid variable.
+ * @parma variable for saving the game state.
+ * @param array containing all possible key combos in the game.
+ * @param number representing the current active keyset.
+ * @param conditional determining if random key is set for key pickup.
+ */
 void item_pickup(player& character, char current_grid[20][20], bool& gameOver, int keyring[10][2], int keySet, bool do_rand);
-
+/**
+ * Function generating a giving structure within the main grid.
+ *
+ * @param grid variable.
+ * @param structure to be generated within the grid.
+ */
 void gen_struct(char current_grid[20][20], const char templateStruct[5][5]);
-
+/**
+ * Function for printing the grid to the console two dimentionally.
+ *
+ * @param grid variable.
+ * @parm size of grid.
+ */
 void display_grid(char current_grid[20][20], int grid_size);
-
+/**
+ * Method for overwriting the entire grid with a level template.
+ *
+ * @param level to overwrite grid.
+ * @param grid variable.
+ */
 void levelConstruct(const char level[20][20], char current_grid[20][20]);
-
+/**
+ * Simple method printing enpty lines to the console. Used to make space for another frame of the game.
+ *
+ */
 void make_space();
-
+/**
+ * Most basic method of getting and handling user directional input.
+ *
+ * @param character to be moved.
+ * @param variable storing direction to move the player in.
+ */
 void action_input(player& character, char move_direction);
-
-void action_input(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2, char move_direction);
-
+/**
+ * Advanced method for getting and handling user direcitonal and command input.
+ *
+ * @param grid variable.
+ * @param player to be moved.
+ * @param first gate object.
+ * @param second gate object.
+ * @param variable storing directinal input.
+ * @param object instantination for input methods(console_reader)
+ */
+void action_input(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2, char move_direction, InputReader* cinreader);
+/**
+ * Client side methodology for checking if the player is attempting to move inside a gate.
+ *
+ * @param grid variable.
+ * @param character to be checked against gate's coords.
+ * @param fist gate object (in lock class)
+ * @param second gate object (in lock class)
+ */
 void gate_check(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2);
-
+/**
+ * Method for executing display function and for resetting the last place the player appeared on the grid.
+ *
+ * @param grid variable.
+ * @param subjected player.
+ * @param size of the grid.
+ * @param direction the palyer has moved.
+ */
 void step(char current_grid[20][20], player& character, int grid_size, char& move_direction);
-
+/**
+ * Logic for player and grid cell and object reset. Resets the player to the last oocupiable space
+ * if the player has moved into an object.
+ *
+ * @param grid variable.
+ * @param character being reset.
+ * @param size of the grid.
+ * @param direction last moved.
+ * @param variabel representing the object that has been moved into.
+ */
 void obj_reset(char current_grid[20][20], player& character, int grid_size, char& move_direction, char client);
-
+/**
+ * Funciton to indicate wether or not the player has moved into a designeted space within the grid.
+ *
+ * @param grid variable.
+ * @param player to be scanned for.
+ * @param left-top grid cell coordinate to define starting point for scanning. Single intager representing x and y.
+ * @param defining size of the area that will be scanned for the player's prescense.
+ * @return wether or not the player has been detected in the scanning area.
+ */
 bool detected_in(char current_grid[20][20], player character, int LTstart, int area);
-
+/**
+ * Logic for checking wether the player has died, signaling the user and ending the game.
+ *
+ * @param main character.
+ * @param global game status variable
+ */
 void is_alive(player character, bool& gameOver);
-
+/**
+ * Funciton handling the visiblity of the enemy and making the enemy's movement visible.
+ *
+ * @param grid variable.
+ * @param enemy to be visualized.
+ * @param player being passed into the enemy's interactive functionallity.
+ */
 void enemy_action(char current_grid[20][20], enemy* MonsterOne, player& character);
-
+/**
+ * Indicator for what object an entity is moving into, if any.
+ *
+ * @param grid variable.
+ * @param enemy subject to indication.
+ * @return the cell type of any object that may be returned.
+ */
 char justify_move(char current_grid[20][20], player subject);
-
-char deduct_approach(player character, box subject);
+/**
+ * Simple method indicating which direction a given entity is approaching anoter from.
+ *
+ * @param entity being checked for approach to subject.
+ * @param subject being checked for approach from approachingEnt.
+ * @return direction the approaching entity is approaching the subject from.
+ */
+char deduct_approach(player approachingEnt, box subject);
 
 /*BEGIN MAIN*/
 
@@ -167,7 +280,7 @@ string input; //for the str_to_int() fxn
 const int grid_size = 20;
 char move_direction;
 bool gameOver = false;
-short int game_level = 1;
+short int game_level = 0;
 int keyring[10][2] = {
     {323, 232}, {890, 208},
     {157, 176}, {225, 755},
@@ -177,16 +290,20 @@ int keyring[10][2] = {
 };
 /*INITIALIZING END*/
 
-welcomeSequence();
+InputReader *cinreader;
+cinreader = new InputReader();
+welcomeSequence(game_level, cinreader);
 
 gen_struct(current_grid, cave);//generating structure
 player character;//init player
 
 cout << "\nUse the WASD keys to move your character.";
 cout << "\nUse the C key to enter a command." << endl;
+game_level = 1;
 move_direction = 'w';
 enemy *MonsterOne;
 MonsterOne = new enemy(25, 100);
+
 do {
     character.prev_x_coord = character.x;
     character.prev_y_coord = character.y;
@@ -215,7 +332,7 @@ do {
         item_pickup(character, current_grid, gameOver, keyring, 0, true);
         step(current_grid, character, grid_size, move_direction);
     };
-} while(gameOver == false);
+} while((gameOver == false) && (game_level == 1));
 
     //setup level two
     delete MonsterOne; MonsterOne = NULL;
@@ -238,7 +355,7 @@ do {
         make_space();
         if (character.firstPlay == true) { cout << "\nLevel Two" << endl; };
         character.firstPlay = false;
-        action_input(current_grid, character, gatekeeper1, gatekeeper2, move_direction);
+        action_input(current_grid, character, gatekeeper1, gatekeeper2, move_direction, cinreader);
         gate_check(current_grid, character, gatekeeper1, gatekeeper2);
         if (justify_move(current_grid, character) == '#') {
             obj_reset(current_grid, character, grid_size, move_direction, '#');
@@ -248,7 +365,7 @@ do {
             item_pickup(character, current_grid, gameOver, keyring, 1, true);
             step(current_grid, character, grid_size, move_direction);
         };
-    } while(gameOver == false);
+    } while((gameOver == false) && (game_level == 2));
         //cleaning up for level three
         delete character.keeper1key; delete character.keeper2key; character.keeper1key = NULL; character.keeper2key = NULL;
         move_direction = 'w';
@@ -272,7 +389,7 @@ do {
             make_space();
             if (character.firstPlay == true) { cout << "\nLevel three" << endl; };
             character.firstPlay = false;
-            action_input(current_grid, character, gatekeeper1, gatekeeper2, move_direction);
+            action_input(current_grid, character, gatekeeper1, gatekeeper2, move_direction, cinreader);
             gate_check(current_grid, character, gatekeeper1, gatekeeper2);
             if (justify_move(current_grid, character) == '/') {
                 character.gateSignature = "dr";
@@ -298,8 +415,10 @@ do {
                 item_pickup(character, current_grid, gameOver, keyring, 1, false);
                 step(current_grid, character, grid_size, move_direction);
             };
-        } while(gameOver == false);
+        } while((gameOver == false) && (game_level == 3));
 
+            //setting up level four
+            game_level = 4;
         std::exit(EXIT_FAILURE);
 
 return 0;
@@ -307,13 +426,14 @@ return 0;
 
 /*END OF MAIN*/
 
-void welcomeSequence() {
+void welcomeSequence(short int game_level, InputReader* cinreader) {
     string command;
     cout << "#           Main Menu          #" << endl;//all lines allign with this one
     cout << "# Type \"options\" for options   #" << endl;
     cout << "# Type \"commands\" for commands #" << endl;
     cout << "# Type \"go\" to start the game  #" << endl;
-    cin >> command;
+    cinreader -> input_constructor("string", "options commands go");
+    command = cinreader -> insert_string();
     if (command == "commands") {
         string consent;
         make_space();
@@ -328,16 +448,23 @@ void welcomeSequence() {
             cout << "\n    \"open\": opens a door after you've tried to move though it.";
             cout << endl;
 
-        cout << "\nOkay? (type anything)" << endl;
-        cin >> consent;
+        cout << "\nOkay? (y/n)" << endl;
+        cinreader -> input_constructor("bool");
         make_space();
-        welcomeSequence();
+        welcomeSequence(game_level, cinreader);
     } else if (command == "go") {
         make_space();
+    } else if (command == "options") {
+        int input;
+        make_space();
+        cout << "\nType the level you would like to go to: ";
+        cinreader -> input_constructor("int");
+        input = cinreader -> insert_intager();
+        game_level = input;
     } else {
         make_space();
         cout << "\nTry Typing something else." << endl;;
-        welcomeSequence();
+        welcomeSequence(game_level, cinreader);
     };
 };
 
@@ -386,7 +513,7 @@ void item_pickup(player& character, char current_grid[20][20], bool& gameOver, i
             cout << "\nYou found a key. The number " << printk << " is on it." << endl;
             break;
         case 'X':
-            cout << "\nYou've won the game!" << endl;
+            cout << "\nLevel Completed" << endl;
             gameOver = true;
             break;
         case '+':
@@ -424,7 +551,7 @@ void make_space() {
     };
 };
 
-void action_input(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2, char move_direction) {
+void action_input(char current_grid[20][20], player& character, lock* gatekeeper1, lock* gatekeeper2, char move_direction, InputReader* cinreader) {
     string command;
     switch (toupper(move_direction)) {
         case 'W':
@@ -442,6 +569,8 @@ void action_input(char current_grid[20][20], player& character, lock* gatekeeper
         case 'C':
             cout << endl; cout << endl; cout << endl;
             cout << "\nEnter an action: " << endl;
+            //cinreader -> input_constructor("string", "unlock keys open");
+            //command = cinreader -> insert_string();
             cin >> command;
             if (command == "unlock") {
                 if (character.gateSignature == gatekeeper1 -> gateSignature) {
@@ -565,9 +694,9 @@ char justify_move(char current_grid[20][20], player subject) {
     };
 };
 
-char deduct_approach(player character, box subject) {
-    if (character.prev_y_coord < subject.y) { return 'l'; };
-    if (character.prev_y_coord > subject.y) { return 'r'; };
-    if (character.prev_x_coord > subject.x) { return 'd'; };
-    if (character.prev_x_coord < subject.x) { return 'u'; };
+char deduct_approach(player approachingEnt, box subject) {
+    if (approachingEnt.prev_y_coord < subject.y) { return 'l'; };
+    if (approachingEnt.prev_y_coord > subject.y) { return 'r'; };
+    if (approachingEnt.prev_x_coord > subject.x) { return 'd'; };
+    if (approachingEnt.prev_x_coord < subject.x) { return 'u'; };
 };
