@@ -16,4 +16,7 @@
 9. Dangerous obstacles
 10. Puzzles
 
-_Note: The adv_game.cpp file was significantly developed within a derivative file called alternative.cpp, also created by me._
+Build and run the adv_game by running the build.sh file(with proper permissions) or by using the makefile of coarse.
+######Use chmod +x <path_to_file_folder_here/build.sh> to give the build file execution permissions.
+
+_Note: The adv_game.cpp file was significantly developed within a derivative file called alternative.cpp, of which I also created._

@@ -1,3 +1,4 @@
+
 #include "console_reader.h"
 
 void InputReader::input_constructor(string input_type) {
