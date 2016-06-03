@@ -1,4 +1,3 @@
-
 #include "console_reader.h"
 
 void InputReader::input_constructor(string input_type) {
@@ -17,12 +16,12 @@ void InputReader::input_constructor(string input_type) {
 
 void InputReader::input_constructor(string input_type, string options) {
     if (input_type == "string") {
-        accepted_mchar_inputs = new string[sizeof(options)];
+        accepted_mchar_inputs = new string[sizeof(options)/2];
         int* count;
         count = new int;
         for (size_t item = 0; item < options.size(); item++) {
-            if (options[item] == ' ') { *count += 1; }
-            else { accepted_mchar_inputs[*count][item] = options[item]; };//error happens here... deleting is increasingly impossible
+            if ((int) options[item] == 32) { *count += 1; }//No part of this loop weilds any result
+            else { accepted_mchar_inputs[*count][item] = options[item]; };//error happened here... deleting is increasingly impossible
         };
         string_handle(input_type, accepted_mchar_inputs);
     } else if (input_type == "int") {
