@@ -22,45 +22,48 @@ import javax.swing.JOptionPane;
     @Override
     public void KeyReleased(KeyEvent e) {};
 }*/
-class ENTITY_PLAYER
+class ENTITY
 {
-    byte prev_coord_x;
-    byte prev_coord_y;
-    byte x = 9;
-    byte y = 9;
-    char skin = '$';
-    boolean firstTurn = true;
-    public ENTITY_PLAYER() {};
-    void movement_handle(char[][] play_board, String direction, boolean levelComplete) {
-        prev_coord_x = x; prev_coord_y = y;
-        switch(Character.toUpperCase(direction.charAt(0))) {
-            case 'W': x -= 1; break;
-            case 'A': y -= 1; break;
-            case 'S': x += 1; break;
-            case 'D': y += 1; break;
-            default: System.out.println("\nThat is not a move.");
+    class ENTITY_PLAYER
+    {
+        byte prev_coord_x;
+        byte prev_coord_y;
+        byte x = 9;
+        byte y = 9;
+        char skin = '$';
+        boolean firstTurn = true;
+        public ENTITY_PLAYER() {};
+        void movement_handle(char[][] play_board, String direction, boolean levelComplete) {
+            prev_coord_x = x; prev_coord_y = y;
+            switch(Character.toUpperCase(direction.charAt(0))) {
+                case 'W': x -= 1; break;
+                case 'A': y -= 1; break;
+                case 'S': x += 1; break;
+                case 'D': y += 1; break;
+                default: System.out.println("\nThat is not a move.");
+            };
+            play_board[prev_coord_x][prev_coord_y] = ' ';
         };
-        justify_move(play_board, levelComplete);
-        play_board[prev_coord_x][prev_coord_y] = ' ';
-    };
-    void justify_move(char[][] play_board, boolean levelComplete) {
-        switch( fxnCtrl.this_object(play_board, x, y) ) {
-            case '#':
-                System.out.println("\nYou cannot move here.");
-                x = prev_coord_x; y = prev_coord_y;
-                play_board[x][y] = skin;
-                break;
-            case 'X':
-                System.out.println("\nLevel Complete!");
-                levelComplete = true;
-                break;
+        void justify_move(char[][] play_board, boolean levelComplete) {
+            switch( adv_game.this_object(play_board, x, y) ) {
+                case '#':
+                    System.out.println("\nYou cannot move here.");
+                    x = prev_coord_x; y = prev_coord_y;
+                    play_board[x][y] = skin;
+                    break;
+                case 'X':
+                    System.out.println("\nLevel Complete!");
+                    levelComplete = true;
+                    break;
+            };
         };
     };
+    //encasing enemy
 };
 
-class fxnCtrl
-{
-    static void display_board(char[][] play_board) {
+public class adv_game {
+    static void display_board(char[][] play_board, ENTITY container) {
+        play_board[container.character.x][container.character.y] = container.character.skin;
         for (byte row = 0; row <= 19; row++) {
             System.out.print("\n");
             for (byte col = 0; col <= 19; col++) {
@@ -69,11 +72,10 @@ class fxnCtrl
         };
         System.out.print("\n");
     };
-    static void generate_struct(char[][] play_board, char[][] template) {
-        int rnum = 4 + (int)(Math.random() * 13);
-        for (byte col = 0; col <= 19; col++) {
-            for (byte row = 0; row <= 19; row++) {
-                play_board[rnum + col][rnum + row] = template[col][row];
+    static void generate_struct(char[][] play_board, char[][] template, byte seed, byte size) {
+        for (byte col = 0; col <= size; col++) {
+            for (byte row = 0; row <= size; row++) {
+                play_board[seed + col][seed + row] = template[col][row];
             };
         };
     };
@@ -92,9 +94,7 @@ class fxnCtrl
         System.out.println("Testing");
         return "null";
     };
-};
 
-public class adv_game {
     public static void main(String[] args)
     {
         //board/grid inports
@@ -157,7 +157,8 @@ public class adv_game {
             {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
         };
         //essensial variables
-        ENTITY_PLAYER character = new ENTITY_PLAYER();
+        ENTITY ent_container = new ENTITY();
+        ENTITY.ENTITY_PLAYER character = ent_container.new ENTITY_PLAYER();
         boolean levelComplete = false;
         String direction;
         //KeyEvent keyCode = new KeyListener();
@@ -167,13 +168,13 @@ public class adv_game {
         JOptionPane.showMessageDialog(null, "\nUse the WASD keys to move the player.");
 
         //setup for level one
-        //fxnCtrl.generate_struct(play_board, boulder);
+        fxnCtrl.generate_struct(play_board, boulder, (byte) 3, (byte) 4);
         do {
             fxnCtrl.make_space();
-            fxnCtrl.display_board(play_board);
+            character.justify_move(play_board, levelComplete);
+            fxnCtrl.display_board(play_board, ent_container);
             direction = console_buffer.nextLine(); //keyCode.getKeyChar();
             character.movement_handle(play_board, direction, levelComplete);
-            play_board[character.x][character.y] = character.skin;
             character.firstTurn = false;
         } while (levelComplete != true);
     };
