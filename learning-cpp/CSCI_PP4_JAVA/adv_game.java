@@ -62,7 +62,7 @@ class ENTITY
 };
 
 public class adv_game {
-    static void display_board(char[][] play_board, ENTITY container) {
+    static void display_board(char[][] play_board, ENTITY ent_container) { //My goal is to pass the container.
         play_board[container.character.x][container.character.y] = container.character.skin;
         for (byte row = 0; row <= 19; row++) {
             System.out.print("\n");

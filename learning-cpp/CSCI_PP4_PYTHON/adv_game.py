@@ -111,10 +111,11 @@ class ENTITY_PLAYER:
             elif ('key2' in self.items != True):
                 key2 = item("key", 2, 0)
                 length = len(self.items)
-                self.items.insert(length + 1, 'key2')
+                self.items.insert(length + 1, 'key2') #inset isn't working
                 print "The number", key2.key, "is on it."
             length = len(self.items) #this really isn't doing anything
             print "Debug Message: ", length
+            print "Debug Message: ", self.items
         if this_object(character) == 'M':
             self.attack(basic_monster, gameLevel, tick)
             self.x = self.prev_coord_x
@@ -142,10 +143,10 @@ class ENTITY_PLAYER:
                 unlock(self)
         if this_object(character) == 'H':
             if (character.x & character.y) == (box1.x & box1.y):
-                if box1.deduct_approach() == 'west': box1.y += 1
-                if box1.deduct_approach() == 'east': box1.y -= 1
-                if box1.deduct_approach() == 'south': box1.x += 1
-                if box1.deduct_approach() == 'north': box1.x -= 1
+                if box1.deduct_approach(character) == 'west': box1.y += 1
+                if box1.deduct_approach(character) == 'east': box1.y -= 1
+                if box1.deduct_approach(character) == 'south': box1.x += 1
+                if box1.deduct_approach(character) == 'north': box1.x -= 1
                 box1.prev_coord_x = box1.x
                 box1.prev_coord_y = box1.y
                 if this_object(box1) == '#':
@@ -155,11 +156,11 @@ class ENTITY_PLAYER:
                     self.y = self.prev_coord_y
                     print "It seems stuck."
             if (character.x & character.y) == (box2.x & box2.y):
-                if box2.deduct_approach() == 'west': box2.y += 1
-                if box2.deduct_approach() == 'east': box2.y -= 1
-                if box2.deduct_approach() == 'south': box2.x += 1
-                if box2.deduct_approach() == 'north': box2.x -= 1
-                box2.prev_coord_x = box2.x
+                if box2.deduct_approach( character) == 'west': box2.y += 1
+                if box2.deduct_approach( character) == 'east': box2.y -= 1
+                if box2.deduct_approach( character) == 'south': box2.x += 1
+                if box2.deduct_approach( character) == 'north': box2.x -= 1
+                box2.prev_coord_x = box2.xself, char
                 box2.prev_coord_y = box2.y
                 if this_object(box2) == '#':
                     box2.x = box2.prev_coord_x
@@ -209,11 +210,11 @@ class BOX:
     y = 0
     prev_coord_x = 0
     prev_coord_y = 0
-    def deduct_approach(character): #will not take arguments correctly
-        if character.y > character.prev_coord_y: return 'east'
-        if character.y < character.prev_coord_y: return 'west'
-        if character.x > character.prev_coord_x: return 'south'
-        if character.x < character.prev_coord_x: return 'north'
+    def deduct_approach(self, character): #will not take arguments correctly
+        if self.character.y > self.character.prev_coord_y: return 'east'
+        if self.character.y < self.character.prev_coord_y: return 'west'
+        if self.character.x > self.character.prev_coord_x: return 'south'
+        if self.character.x < self.character.prev_coord_x: return 'north'
 def detect(matrix, target):
     coords = [[0], [0]]
     for col in range(20):
