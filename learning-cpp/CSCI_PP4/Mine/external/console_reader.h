@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <cstring>
+#include <vector>
 using namespace std;
 
 class InputReader
@@ -30,14 +31,13 @@ public:
      * @param desired values for the user to input.
      */
     void input_constructor(string input_type, string options);
-
     /**
      * function for handling string-type input.
      *
      * @param designated variable for string input collected by the user.
      * @param raw array of acceptable inputs.
      */
-    void string_handle(string& input_type_string, string* accepted_inputs);
+    void string_handle(string& input_type_string, vector<char> accepted_inputs);
     /**
      * function for handling intager-type input.
      *

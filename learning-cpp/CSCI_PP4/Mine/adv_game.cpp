@@ -659,7 +659,7 @@ void obj_reset(char current_grid[20][20], player& character, int grid_size, char
     if (client == '#') { cout << "\nYou cannot move here." << endl; };
     if (client == '/') { cout << "\nA door is blocking your path. You should be able to open it." << endl; };
     if (client == '=') { cout << "\nThere's a gate here. Maybe there's a lock nearby." << endl; };
-    character.x = character.prev_x_coord;//settings player to previous coords (before moved into a wall)
+    character.x = character.prev_x_coord;//setting player to previous coords (before moved into a wall)
     character.y = character.prev_y_coord;
     if (client != '/') { display_grid(current_grid, grid_size); };
     if (client != '/') { cin >> move_direction; };
@@ -690,7 +690,6 @@ char justify_move(char current_grid[20][20], player subject) {
         case '/': return '/';
         case '_': return '_';
         case '=': return '=';
-        default: break;
     };
 };
 

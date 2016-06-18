@@ -1,8 +1,9 @@
 #include "console_reader.h"
 
 void InputReader::input_constructor(string input_type) {
+    vector<char> empty;
     if (input_type == "string") {
-        string_handle(input_type_string, NULL);
+        string_handle(input_type_string, empty);
     } else if (input_type == "int") {
         intager_handle(input_type_int);
     } else if (input_type == "bool") {
@@ -14,14 +15,12 @@ void InputReader::input_constructor(string input_type) {
     };
 };
 
+
 void InputReader::input_constructor(string input_type, string options) {
     if (input_type == "string") {
-        accepted_mchar_inputs = new string[sizeof(options)/2];
-        int* count;
-        count = new int;
-        for (size_t item = 0; item < options.size(); item++) {
-            if ((int) options[item] == 32) { *count += 1; }//No part of this loop weilds any result
-            else { accepted_mchar_inputs[*count][item] = options[item]; };//error happened here... deleting is increasingly impossible
+        vector<char>[options.size()] accepted_mchar_inputs;
+        for (size_t index = 0; index < options.size(); index++) {
+            accepted_mchar_inputs.push_back(options[index]);
         };
         string_handle(input_type, accepted_mchar_inputs);
     } else if (input_type == "int") {
@@ -37,7 +36,7 @@ void InputReader::input_constructor(string input_type, string options) {
     };
 };
 
-void InputReader::string_handle(string& input_type_string, string* accepted_mchar_inputs) {
+void InputReader::string_handle(string& input_type_string, vector<char> accepted_inputs) {
     cin >> input_type_string;
     if (input_type_string.size() <= 1) {
         bool* is_char;
