@@ -1,5 +1,5 @@
 /*
- * adv_game (v2.5.9)
+ * adv_game (v3.6.0)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -8,6 +8,8 @@
  */
 import java.io.*;
 import java.util.Scanner;
+import java.util.Random;
+import java.util.Vector;
 import java.awt.event.*;
 import javax.swing.JOptionPane;
 
@@ -25,7 +27,9 @@ class ENTITY_PLAYER
     char skin = '$';
     boolean firstTurn = true;
     char say;
-    public ENTITY_PLAYER(int x, int y) {
+    Vector<Integer> keys = new Vector<Integer>(3, 3);
+    Random randGenerator = new Random();
+    ENTITY_PLAYER(int x, int y) {
         this.x = (byte) x;
         this.y = (byte) y;
         this.prev_x = (byte) x;
@@ -103,6 +107,57 @@ class ENTITY_PLAYER
         play_board[prev_x][prev_y] = ' ';
     };
 };
+interface KEYGUARD {
+    int[][] keyring = {
+        {323, 232}, {890, 208},
+        {157, 176}, {225, 755},
+        {114, 495}, {611, 815},
+        {212, 311}, {732, 326},
+        {985, 860}, {615, 524}
+    };
+}
+class GATEKEEPER implements KEYGUARD
+{
+    private int key;
+    byte keyRing;
+    byte player_x;
+    byte player_y;
+    Vector<Integer> keys;
+    byte gateCoord_x;
+    byte gateCoord_y;
+    char gateSkin;
+    boolean partner;
+    Random randGenerator = new Random();
+    GATEKEEPER(int x, int y, int key, int keyRing, boolean partner) {
+        this.gateCoord_x = (byte) x;
+        this.gateCoord_y = (byte) y;
+        this.key = key;
+        this.keyRing = (byte) keyRing;
+        this.partner = partner;
+    };
+    int getKey() { return key; };
+    void pickup(char[][] matrix, ENTITY_PLAYER subject) {
+        player_x = subject.x;
+        player_y = subject.y;
+        keys = subject.keys;
+        if (adv_game.this_object(matrix, player_x, player_y) == '^') {
+            System.out.print("You: A key... The number ");
+            if (partner == true) {
+                Boolean hasKey = new Boolean(false); hasKey = false;
+                if ((randGenerator.nextBoolean() == false) && (hasKey == false)) {
+                    keys.addElement(keyring[keyRing][0]);
+                    hasKey = true;
+                } else { keys.addElement(keyring[0][1]); };
+            } else {
+                keys.addElement(keyring[keyRing][0]);
+            };
+            System.out.print(keys.lastElement() + " is on it.");
+        };
+    };/*
+    void gateCheck(char[][] matrix, ENTITY_PLAYER subject) {
+            //Pending development
+    };*/
+};
 
 class ENTITY_ENEMY_HUNTER
 {
@@ -159,6 +214,7 @@ class ENTITY_ENEMY_CRAWLER
     byte prev_y;
     char skin = '|';
     char direction = 'w';
+    Random rgen = new Random();
     ENTITY_ENEMY_CRAWLER(int x, int y) {
         this.x = (byte) x;
         this.y = (byte) y;
@@ -174,10 +230,10 @@ class ENTITY_ENEMY_CRAWLER
         if(adv_game.this_object(grid, x, y) == '#') {
             x = prev_x; y = prev_y;
             switch (direction) {
-                case 'w': direction = 'a'; break;
-                case 'a': direction = 's'; break;
-                case 's': direction = 'd'; break;
-                case 'd': direction = 'w'; break;
+                case 'w': if (rgen.nextInt(40) >= 25) {direction = 'a';} else {direction = 'd';}; break;
+                case 'a': if (rgen.nextInt(40) >= 25) {direction = 's';} else {direction = 'w';}; break;
+                case 's': if (rgen.nextInt(40) >= 20) {direction = 'd';} else {direction = 'a';}; break;
+                case 'd': if (rgen.nextInt(40) <= 20) {direction = 'w';} else {direction = 's';}; break;
             };
         };
         if (aggrogate.x % x <= 1 && aggrogate.x / x <= 1 && aggrogate.y % y <= 1 && aggrogate.y / y <= 1) {
@@ -230,7 +286,6 @@ public class adv_game {
     static void make_space() {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     };
-    static int flip() { return (int) (Math.random() + 2); };
 
     public static void main(String[] args) throws IOException
     {
@@ -286,6 +341,28 @@ public class adv_game {
             {'#', ' ', ' ', 'X', ' ', '#', '#', ' ', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', '#'},
             {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
         };
+        final char[][] levelThree = {
+            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', '#', '^', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+            {'#', ' ', ' ', ' ', '/', 'H', ' ', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', 'X', '#'},
+            {'#', ' ', ' ', ' ', '#', '#', ' ', ' ', 'H', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+            {'#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+            {'#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', '#'},
+            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+            {'#', ' ', ' ', ' ', '@', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', ' '},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', '#', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', '/', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' '},
+            {'#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        };
         char[][] play_board = {
             {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
             {'#', 'X', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
@@ -309,19 +386,24 @@ public class adv_game {
             {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
         };
         ENTITY_PLAYER player = new ENTITY_PLAYER(10, 10);
+        Random randomGenerator = new Random();
         //KeyEvent keyCode = new KeyListener();
 
         JOptionPane.showMessageDialog(null, "Narrator: Use the WASD keys to move the player." + "\nAnd use C to enter a command.");
 
         //setup for level one
-        if (flip() == 1) {
+        if (randomGenerator.nextBoolean() == true) {
             generate_struct(play_board, boulder, 5, 4);
         } else { generate_struct(play_board, cave, 5, 4); };
         ENTITY_ENEMY_HUNTER monster = new ENTITY_ENEMY_HUNTER(4, 4, 'M');
+        GATEKEEPER l1Gate1 = new GATEKEEPER(11, 13, 323, 0, true);
+        GATEKEEPER l1Gate2 = new GATEKEEPER(11, 15, 232, 1, true);
         player.currentLevel = 1;
         do {
             make_space();
+            l1Gate1.pickup(play_board, player);
             player.object_reaction(play_board, monster);
+            message_buffer(player);
             display_board(play_board);
             player.movement_handle();
             monster.auto_hunt(play_board, player);
@@ -329,7 +411,7 @@ public class adv_game {
         //cleanup and setup for level two
         generate_struct(play_board, levelTwo, 0, 19);
         monster = null;
-        ENTITY_ENEMY_CRAWLER snitch = new ENTITY_ENEMY_CRAWLER(4, 2);
+        ENTITY_ENEMY_CRAWLER snitch = new ENTITY_ENEMY_CRAWLER(5, 15);
         do {
             make_space();
             player.object_reaction(play_board, null);
@@ -338,6 +420,17 @@ public class adv_game {
             player.movement_handle();
             snitch.crawl(play_board, player);
         } while (player.currentLevel == 2);
+        //cleanup and setup for level three
+        l1Gate1 = null; l1Gate2 = null;
+        snitch = null;
+        generate_struct(play_board, levelThree, 0, 19);
+        do {
+            make_space();
+            player.object_reaction(play_board, null);
+            message_buffer(player);
+            display_board(play_board);
+            player.movement_handle();
+        } while (player.currentLevel == 3);
 
         System.out.println("Narrator: Congradulations, you've won the game.");
     };
