@@ -1,5 +1,5 @@
 /*
- * adv_game (v3.6.0)
+ * adv_game (v5.7.0)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -7,11 +7,15 @@
  * Date added: 6/3/16
  */
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Scanner;
 import java.util.Random;
 import java.util.Vector;
 import java.awt.event.*;
 import javax.swing.JOptionPane;
+import java.lang.StringBuilder;
 
 class ENTITY_PLAYER
 {
@@ -29,6 +33,7 @@ class ENTITY_PLAYER
     char say;
     Vector<Integer> keys = new Vector<Integer>(3, 3);
     Random randGenerator = new Random();
+    boolean eventTriggered = false;
     ENTITY_PLAYER(int x, int y) {
         this.x = (byte) x;
         this.y = (byte) y;
@@ -59,11 +64,10 @@ class ENTITY_PLAYER
                 case 'C':
                     System.out.print("Game: Enter a comand: ");
                     String command = console_buffer.nextLine();
-                    System.out.println("Debug: " + command); //control structures beyond this point don't seem to function as desired
-                    if (command == "health") { System.out.println("You: I seem to be at " + getHealth() + " health."); }
-                    else if (command == "help") {
-                        System.out.println("Narrator: You can enter the following: help, health");
-                    } else { System.out.println("Game: Invalid command."); };
+                    if (command.equals("health")) { say = 'h'; }
+                    else if (command.equals("help")) { say = 'e'; }
+                    else if (command.equals("quit")) { say = 'q'; }
+                    else { System.out.println("Game: Invalid command."); };
                     break;
                 default: System.out.println("Game: That is not a move.");
             };
@@ -157,6 +161,44 @@ class GATEKEEPER implements KEYGUARD
     void gateCheck(char[][] matrix, ENTITY_PLAYER subject) {
             //Pending development
     };*/
+};
+class MOVABLE
+{
+    byte x;
+    byte y;
+    byte prev_x;
+    byte prev_y;
+    char skin;
+    MOVABLE(int x, int y, char skin) {
+        this.x = (byte) x;
+        this.y = (byte) y;
+        this.skin = skin;
+    };
+    String deduct_approach(ENTITY_PLAYER subject) {
+        if (subject.x > subject.prev_x) {return "south";};
+        if (subject.x < subject.prev_x) {return "north";};
+        if (subject.y > subject.prev_y) {return "east";};
+        if (subject.y < subject.prev_y) {return "west";};
+        return "none";
+    };
+    void react(char[][] matrix, ENTITY_PLAYER aggravator) {
+        if (x == aggravator.x && y == aggravator.y) {
+            prev_x = x; prev_y = y;
+            if (deduct_approach(aggravator) == "south") { x += 1; };
+            if (deduct_approach(aggravator) == "north") { x -= 1; };
+            if (deduct_approach(aggravator) == "east") { y += 1; };
+            if (deduct_approach(aggravator) == "west") { y -= 1; };
+            if (adv_game.this_object(matrix, x, y) == '#') {
+                aggravator.x = aggravator.prev_x;
+                aggravator.y = aggravator.prev_y;
+                x = prev_x;
+                y = prev_y;
+                System.out.println("You: It seems stuck.");
+            };
+            if (adv_game.this_object(matrix, x, y) == '*') { aggravator.eventTriggered = true; };
+        };
+        matrix[x][y] = skin;
+    };
 };
 
 class ENTITY_ENEMY_HUNTER
@@ -255,6 +297,26 @@ public class adv_game {
             };
         };
     };
+    static void welcome() {
+        Scanner console_buffer = new Scanner(System.in);
+        System.out.println("********************************");
+        System.out.println("*           Main Menu          *");
+        System.out.println("*     Type anything to start   *");
+        System.out.println("* Type \"stats\" for statistics  *");
+        System.out.println("*    Type \"help\" for help      *");
+        System.out.println("********************************");
+        System.out.print(">> ");
+        String command = console_buffer.nextLine();
+        if (command.equals("stats")) {};
+        if (command.equals("help")) {
+            String messageBody = "In adv_game you can use the WASD keys to move and the C key to input commands.\n"
+            +"Commands include; quit, help, health, restart. Quit will quit the game, Help will show a list of possible commands,\n"
+            +"Health will invoke your character to say his health and Restart will restart the current level. In this game you\n"
+            +"also encounter enemies that can be attacked by simply moving into them. You will find power-ups that can be\n"
+            +"collected the same way and some objects can be moved by moving towards them as well.\n";
+            JOptionPane.showMessageDialog(null, messageBody , "Adv_game Manual", JOptionPane.INFORMATION_MESSAGE);
+        };
+    };
     static void generate_struct(char[][] play_board, char[][] template, int seed, int size) {
         for (int col = 0; col <= size; col++) {
             for (int row = 0; row <= size; row++) {
@@ -271,6 +333,7 @@ public class adv_game {
             case 'T': return 'T';
             case '+': return '+';
             case 'H': return 'H';
+            case '*': return '*';
         };
         return ' ';
     };
@@ -281,6 +344,68 @@ public class adv_game {
                 System.out.println("Narrator: You've been attacked, your health is now at " + subject.getHealth() + ".");
                 subject.say = '0';
                 break;
+            case 'e':
+                System.out.println("Narrator: You can enter the following: help, health, quit, restart");
+                break;
+            case 'h':
+                System.out.println("You: I seem to be at " + subject.getHealth() + " health.");
+                break;
+            case 'q':
+                System.out.println("Exiting."); System.exit(0);
+                break;
+        };
+    };
+    static void process_triggers(char[][] matrix, ENTITY_PLAYER player) {
+        Vector<String> compilation = new Vector<String>();
+        try {
+            Path file_path = Paths.get("commands.dat");
+            InputStream FILE_IN = Files.newInputStream(file_path);
+            BufferedReader READ_HEAD = new BufferedReader(new InputStreamReader(FILE_IN));
+            String readData = READ_HEAD.readLine();
+            while (readData != null) {
+                StringBuilder prefect = new StringBuilder();
+                for (int indexer = 0; indexer < readData.length() ;indexer++ ) {
+                    if (readData.charAt(indexer) != ' ') {
+                        prefect.append(readData.charAt(indexer));
+                    } else {
+                        compilation.addElement(prefect.toString());
+                        prefect.delete(0, prefect.length());
+                    };
+                };
+                compilation.addElement(prefect.toString());
+                readData = READ_HEAD.readLine();
+            };
+            READ_HEAD.close();
+            FILE_IN.close();
+        } catch (IOException ex) {
+            System.out.println(ex);
+        };
+        if (player.eventTriggered == true)
+        {
+            String statement1;
+            String statement2;
+            String statement3;
+            String statement4;
+            Boolean consider = new Boolean(false);
+            for (byte stat_cont = 0; stat_cont < compilation.size() ;stat_cont++ ) {
+                System.out.println(compilation.elementAt(stat_cont));
+                if (consider == true)
+                {
+                    if (compilation.elementAt(stat_cont).equals("remove")) {
+                        matrix
+                        [Integer.parseInt(compilation.elementAt(stat_cont + 1))]
+                        [Integer.parseInt(compilation.elementAt(stat_cont + 2))]
+                        = ' ';
+                    };
+                };
+                if (compilation.elementAt(stat_cont).equals("level3") && player.currentLevel == 3)
+                    {consider = true;};
+                if (compilation.elementAt(stat_cont).equals("level2") && player.currentLevel == 2)
+                    {consider = true;};
+                if (compilation.elementAt(stat_cont).equals("level1") && player.currentLevel == 1)
+                    {consider = true;};
+            };
+            player.eventTriggered = false;
         };
     };
     static void make_space() {
@@ -342,14 +467,14 @@ public class adv_game {
             {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
         };
         final char[][] levelThree = {
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
+            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#'},
             {'#', ' ', ' ', ' ', '#', ' ', ' ', '#', '^', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', '/', 'H', ' ', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', 'X', '#'},
-            {'#', ' ', ' ', ' ', '#', '#', ' ', ' ', 'H', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', '#'},
+            {'#', ' ', ' ', ' ', '/', 'H', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', 'X', '#'},
+            {'#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+            {'#', ' ', ' ', '#', '#', ' ', ' ', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+            {'#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+            {'#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+            {'#', ' ', ' ', '#', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', '#'},
             {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
             {'#', ' ', ' ', ' ', '@', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
             {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', ' '},
@@ -358,9 +483,9 @@ public class adv_game {
             {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
             {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', '#', ' ', '#', ' ', ' '},
             {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', '/', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' '},
+            {'#', ' ', ' ', ' ', '/', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '},
+            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' '},
             {'#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
         };
         char[][] play_board = {
@@ -390,6 +515,7 @@ public class adv_game {
         //KeyEvent keyCode = new KeyListener();
 
         JOptionPane.showMessageDialog(null, "Narrator: Use the WASD keys to move the player." + "\nAnd use C to enter a command.");
+        welcome();
 
         //setup for level one
         if (randomGenerator.nextBoolean() == true) {
@@ -424,12 +550,15 @@ public class adv_game {
         l1Gate1 = null; l1Gate2 = null;
         snitch = null;
         generate_struct(play_board, levelThree, 0, 19);
+        MOVABLE box1 = new MOVABLE(2, 5, 'H');
         do {
             make_space();
+            box1.react(play_board, player);
             player.object_reaction(play_board, null);
             message_buffer(player);
             display_board(play_board);
             player.movement_handle();
+            process_triggers(play_board, player);
         } while (player.currentLevel == 3);
 
         System.out.println("Narrator: Congradulations, you've won the game.");
