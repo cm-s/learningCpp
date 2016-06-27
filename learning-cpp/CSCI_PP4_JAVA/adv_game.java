@@ -1,5 +1,5 @@
 /*
- * adv_game (v5.7.0)
+ * adv_game (v7.3.6)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -13,10 +13,12 @@ import java.nio.file.Path;
 import java.util.Scanner;
 import java.util.Random;
 import java.util.Vector;
-import java.awt.event.*;
-import javax.swing.JOptionPane;
 import java.lang.StringBuilder;
+import java.lang.Byte;
+import java.lang.Integer;
+import javax.swing.JOptionPane;
 
+@SuppressWarnings("unchecked")
 class ENTITY_PLAYER
 {
     private int health = 400;
@@ -25,20 +27,66 @@ class ENTITY_PLAYER
     byte prev_y;
     byte x;
     byte y;
-    char direction;
-    Scanner console_buffer = new Scanner(System.in);
     byte currentLevel;
+    byte keyTaken = 0;
+    char direction;
     char skin = '$';
-    boolean firstTurn = true;
     char say;
-    Vector<Integer> keys = new Vector<Integer>(3, 3);
-    Random randGenerator = new Random();
+    boolean firstTurn = true;
     boolean eventTriggered = false;
+    Scanner console_buffer = new Scanner(System.in);
+    Vector keys = new Vector();
+    Random randGenerator = new Random();
     ENTITY_PLAYER(int x, int y) {
         this.x = (byte) x;
         this.y = (byte) y;
         this.prev_x = (byte) x;
         this.prev_y = (byte) y;
+    };
+    void LOAD(String file_name) {
+        Vector<String> aspects = new Vector<String>();
+        adv_game.processFile(file_name, aspects);
+        health = Integer.parseInt(aspects.elementAt(0));
+        damage = Integer.parseInt(aspects.elementAt(1));
+        x = Byte.valueOf(aspects.elementAt(2));
+        y = Byte.valueOf(aspects.elementAt(3));
+        prev_x = Byte.valueOf(aspects.elementAt(4));
+        prev_y = Byte.valueOf(aspects.elementAt(5));
+        currentLevel = Byte.valueOf(aspects.elementAt(6));
+        if (aspects.elementAt(7) == "false") { firstTurn = false; } else { firstTurn = true; };
+        Vector newKeyset = new Vector();
+        for (byte line = 8; line < aspects.size(); line++)
+            { newKeyset.addElement(Integer.parseInt(aspects.elementAt(line))); };
+        keys = newKeyset;
+    };
+    void SAVE(String file_name) {
+        // Save State Formatting Standard
+        /*  Line #      Variable
+         ----------------------------------------------------
+         *  1           health
+         *  2           damage
+         *  3           x coordinate
+         *  4           y coordinate
+         *  5           previous x coordinate
+         *  6           previous y coordinate
+         *  7           current Level
+         *  8           firstTurn (var, name implies)
+         *  9-EOF       however many keys owned by the player
+         */
+        try {
+        PrintWriter FILE_OUT = new PrintWriter(file_name);
+        FILE_OUT.println(health);
+        FILE_OUT.println(damage);
+        FILE_OUT.println(x);
+        FILE_OUT.println(y);
+        FILE_OUT.println(prev_x);
+        FILE_OUT.println(prev_y);
+        FILE_OUT.println(currentLevel);
+        FILE_OUT.println(firstTurn);
+        for(byte idx=0;idx<keys.size();idx++)
+        { FILE_OUT.println(keys.elementAt(idx).toString()); };
+        FILE_OUT.close();
+        } catch (IOException ex) { System.out.println(ex); };
     };
     int getHealth() { return health; };
     void addHealth(int input) { health += input; };
@@ -67,9 +115,20 @@ class ENTITY_PLAYER
                     if (command.equals("health")) { say = 'h'; }
                     else if (command.equals("help")) { say = 'e'; }
                     else if (command.equals("quit")) { say = 'q'; }
+                    else if (command.equals("keys")) { say = 'k'; }
+                    else if (command.equals("save")) { SAVE("save_state.dat"); }
+                    else if (command.equals("restart")) {
+                        switch( currentLevel ) {
+                            case 1: LOAD("level1"); break;
+                            case 2: LOAD("level2"); break;
+                            case 3: LOAD("level3"); break;
+                        };
+                    }
                     else { System.out.println("Game: Invalid command."); };
                     break;
-                default: System.out.println("Game: That is not a move.");
+                default:
+                    say = 'm';
+                    break;
             };
         } catch(StringIndexOutOfBoundsException ex) {
             System.out.println("Exception: " + ex);
@@ -106,6 +165,26 @@ class ENTITY_PLAYER
                 x = prev_x;
                 y = prev_y;
                 break;
+            case '/':
+                byte doorX = x;
+                byte doorY = y;
+                x = prev_x;
+                y = prev_y;
+                System.out.println("You: There's a door, it seems to be unlocked.");
+                System.out.println("Narrator: Open it? y/n > ");
+                char response = console_buffer.nextLine().charAt(0);
+                if (response == 'y') { play_board[doorX][doorY] = ' '; };
+                break;
+            case '_':
+                doorX = x;
+                doorY = y;
+                x = prev_x;
+                y = prev_y;
+                System.out.println("You: There's a door, it seems to be unlocked.");
+                System.out.println("Narrator: Open it? y/n > ");
+                response = console_buffer.nextLine().charAt(0);
+                if (response == 'y') { play_board[doorX][doorY] = ' '; };
+                break;
         };
         play_board[x][y] = skin;
         play_board[prev_x][prev_y] = ' ';
@@ -119,14 +198,15 @@ interface KEYGUARD {
         {212, 311}, {732, 326},
         {985, 860}, {615, 524}
     };
-}
+};
+@SuppressWarnings("unchecked")
 class GATEKEEPER implements KEYGUARD
 {
     private int key;
     byte keyRing;
+    boolean unlocked = false;
     byte player_x;
     byte player_y;
-    Vector<Integer> keys;
     byte gateCoord_x;
     byte gateCoord_y;
     char gateSkin;
@@ -135,32 +215,57 @@ class GATEKEEPER implements KEYGUARD
     GATEKEEPER(int x, int y, int key, int keyRing, boolean partner) {
         this.gateCoord_x = (byte) x;
         this.gateCoord_y = (byte) y;
-        this.key = key;
         this.keyRing = (byte) keyRing;
         this.partner = partner;
+        this.key = key;
     };
     int getKey() { return key; };
     void pickup(char[][] matrix, ENTITY_PLAYER subject) {
         player_x = subject.x;
         player_y = subject.y;
-        keys = subject.keys;
         if (adv_game.this_object(matrix, player_x, player_y) == '^') {
             System.out.print("You: A key... The number ");
             if (partner == true) {
-                Boolean hasKey = new Boolean(false); hasKey = false;
-                if ((randGenerator.nextBoolean() == false) && (hasKey == false)) {
-                    keys.addElement(keyring[keyRing][0]);
-                    hasKey = true;
-                } else { keys.addElement(keyring[0][1]); };
+                if (((randGenerator.nextBoolean() == false) && (subject.keyTaken != 1) || subject.keyTaken == 2)) {
+                    subject.keys.addElement(new Integer(keyring[keyRing][0]));
+                    subject.keyTaken = 1;
+                } else if (subject.keyTaken != 2) {
+                    subject.keys.addElement(new Integer(keyring[keyRing][1]));
+                    subject.keyTaken = 2;
+                };
             } else {
-                keys.addElement(keyring[keyRing][0]);
+                subject.keys.addElement(new Integer(keyring[keyRing][0]));
             };
-            System.out.print(keys.lastElement() + " is on it.");
+            System.out.print(subject.keys.lastElement() + " is on it.");
         };
-    };/*
+    };
     void gateCheck(char[][] matrix, ENTITY_PLAYER subject) {
-            //Pending development
-    };*/
+        player_x = subject.x;
+        player_y = subject.y;//might not need this
+        if (player_x == gateCoord_x && player_y == gateCoord_y && unlocked == false) {
+            subject.x = subject.prev_x;
+            subject.y = subject.prev_y;
+            System.out.println("Narrator: There's a gate.");
+            System.out.println("You: it seems to be unlocked...");
+            System.out.println("Narrator: Try to unlock it? y/n > ");
+            char response = subject.console_buffer.nextLine().charAt(0);
+            if (response == 'y')
+            {
+                for (byte indexer = 0; indexer < subject.keys.size(); indexer++)
+                {
+                    if (subject.keys.elementAt(indexer).equals(key)) {
+                        matrix[gateCoord_x][gateCoord_y] = ' ';
+                        gateCoord_x = 0;
+                        gateCoord_y = 0;
+                        gateSkin = '#';
+                        unlocked = true;
+                    };
+                    if (unlocked == true) { System.out.println("You: Unlocked!"); }
+                    else { System.out.println("You: These keys don't fit..."); };
+                };
+            };
+        };
+    };
 };
 class MOVABLE
 {
@@ -175,10 +280,10 @@ class MOVABLE
         this.skin = skin;
     };
     String deduct_approach(ENTITY_PLAYER subject) {
-        if (subject.x > subject.prev_x) {return "south";};
-        if (subject.x < subject.prev_x) {return "north";};
-        if (subject.y > subject.prev_y) {return "east";};
-        if (subject.y < subject.prev_y) {return "west";};
+        if (subject.x > subject.prev_x) { return "south"; };
+        if (subject.x < subject.prev_x) { return "north"; };
+        if (subject.y > subject.prev_y) { return "east"; };
+        if (subject.y < subject.prev_y) { return "west"; };
         return "none";
     };
     void react(char[][] matrix, ENTITY_PLAYER aggravator) {
@@ -269,7 +374,7 @@ class ENTITY_ENEMY_CRAWLER
             case 's': x += 1; break;
             case 'd': y += 1; break;
         };
-        if(adv_game.this_object(grid, x, y) == '#') {
+        if(adv_game.this_object(grid, x, y) == '#' || adv_game.this_object(grid, x, y) == 'X') {
             x = prev_x; y = prev_y;
             switch (direction) {
                 case 'w': if (rgen.nextInt(40) >= 25) {direction = 'a';} else {direction = 'd';}; break;
@@ -287,34 +392,93 @@ class ENTITY_ENEMY_CRAWLER
         grid[prev_x][prev_y] = ' ';
     };
 };
+class FileCommandInterpreter
+{
+    String lastRun = new String();
+    Integer times = new Integer(0);
+    void main_(char[][] matrix, ENTITY_PLAYER player)
+    {
+    if (player.eventTriggered == true)
+    {
+        Vector<String> compilation = new Vector<String>();
+        String last = new String();
+        Integer indexer = new Integer(0);
+        adv_game.processFile("commands.dat", compilation);
+        for (String statement : compilation) {
+            if (last.equals("level3") && player.currentLevel == 3) {
+                if (lastRun != "level3" && times < 2) {
+                    if (statement.equals("teleport")) {
+                        System.out.println("teleporting");
+                        lastRun = "level3";
+                        break;
+                    };
+                    if (statement.equals("remove")) {
+                        matrix
+                        [Integer.parseInt(compilation.elementAt(indexer + 1))]
+                        [Integer.parseInt(compilation.elementAt(indexer + 2))]
+                        = ' ';
+                        lastRun = "level3";
+                        break;
+                    };
+                } else if (times < 2) {
+                    lastRun = "none";
+                    times += 1;
+                } else { times -= 1; };
+            };
+            last = statement;
+            indexer++;
+        };
+        last = "null";
+        player.eventTriggered = false;
+    };
+    };
+};
 
 public class adv_game {
+    static void processFile(String file_name, Vector<String> compilation) {
+        try {
+            Path file_path = Paths.get(file_name);
+            InputStream FILE_IN = Files.newInputStream(file_path);
+            BufferedReader READ_HEAD = new BufferedReader(new InputStreamReader(FILE_IN));
+            String readData = READ_HEAD.readLine();
+            Integer cnt = new Integer(0);
+            while (readData != null) {
+                cnt++;
+                StringBuilder prefect = new StringBuilder();
+                for (int indexer = 0; indexer < readData.length() ;indexer++ ) {
+                    if (readData.charAt(indexer) != ' ') {
+                        prefect.append(readData.charAt(indexer));
+                    } else {
+                        compilation.addElement(prefect.toString());
+                        prefect.delete(0, prefect.length());
+                    };
+                };
+                compilation.addElement(prefect.toString());
+                readData = READ_HEAD.readLine();
+                //System.out.println(compilation.elementAt(cnt));
+            };
+            READ_HEAD.close();
+            FILE_IN.close();
+        } catch (IOException ex) {
+            System.out.println(ex);
+        };
+    };
+    static void cleanup() {
+        try {
+            Path level1 = Paths.get("level1");
+            if (Files.exists(level1)) { Files.delete(level1); };
+            Path level2 = Paths.get("level2");
+            if (Files.exists(level2)) { Files.delete(level2); };
+            Path level3 = Paths.get("level3");
+            if (Files.exists(level3)) { Files.delete(level3); };
+        } catch (IOException ex) { System.out.println(ex); };
+    };
     static void display_board(char[][] play_board) {
         for (byte row = 0; row <= 19; row++) {
             System.out.print("\n");
             for (byte col = 0; col <= 19; col++) {
                 System.out.print(play_board[row][col] + " ");
             };
-        };
-    };
-    static void welcome() {
-        Scanner console_buffer = new Scanner(System.in);
-        System.out.println("********************************");
-        System.out.println("*           Main Menu          *");
-        System.out.println("*     Type anything to start   *");
-        System.out.println("* Type \"stats\" for statistics  *");
-        System.out.println("*    Type \"help\" for help      *");
-        System.out.println("********************************");
-        System.out.print(">> ");
-        String command = console_buffer.nextLine();
-        if (command.equals("stats")) {};
-        if (command.equals("help")) {
-            String messageBody = "In adv_game you can use the WASD keys to move and the C key to input commands.\n"
-            +"Commands include; quit, help, health, restart. Quit will quit the game, Help will show a list of possible commands,\n"
-            +"Health will invoke your character to say his health and Restart will restart the current level. In this game you\n"
-            +"also encounter enemies that can be attacked by simply moving into them. You will find power-ups that can be\n"
-            +"collected the same way and some objects can be moved by moving towards them as well.\n";
-            JOptionPane.showMessageDialog(null, messageBody , "Adv_game Manual", JOptionPane.INFORMATION_MESSAGE);
         };
     };
     static void generate_struct(char[][] play_board, char[][] template, int seed, int size) {
@@ -334,10 +498,13 @@ public class adv_game {
             case '+': return '+';
             case 'H': return 'H';
             case '*': return '*';
+            case '/': return '/';
+            case '@': return '@';
+            case '_': return '_';
         };
         return ' ';
     };
-    static void message_buffer(ENTITY_PLAYER subject) {
+    static void message_postProcessor(ENTITY_PLAYER subject) {
         switch( subject.say ) {
             case 'd':
                 System.out.println("You: Aaah!");
@@ -346,72 +513,65 @@ public class adv_game {
                 break;
             case 'e':
                 System.out.println("Narrator: You can enter the following: help, health, quit, restart");
+                subject.say = '0';
                 break;
             case 'h':
                 System.out.println("You: I seem to be at " + subject.getHealth() + " health.");
+                subject.say = '0';
                 break;
             case 'q':
+                cleanup();
                 System.out.println("Exiting."); System.exit(0);
                 break;
-        };
-    };
-    static void process_triggers(char[][] matrix, ENTITY_PLAYER player) {
-        Vector<String> compilation = new Vector<String>();
-        try {
-            Path file_path = Paths.get("commands.dat");
-            InputStream FILE_IN = Files.newInputStream(file_path);
-            BufferedReader READ_HEAD = new BufferedReader(new InputStreamReader(FILE_IN));
-            String readData = READ_HEAD.readLine();
-            while (readData != null) {
-                StringBuilder prefect = new StringBuilder();
-                for (int indexer = 0; indexer < readData.length() ;indexer++ ) {
-                    if (readData.charAt(indexer) != ' ') {
-                        prefect.append(readData.charAt(indexer));
-                    } else {
-                        compilation.addElement(prefect.toString());
-                        prefect.delete(0, prefect.length());
+            case 'k':
+                if (subject.keys.isEmpty()) {
+                    System.out.println("You: I haven't picked up any keys.");
+                } else {
+                    System.out.print("You: I have keys ");
+                    for (byte indexer = 0; indexer < subject.keys.size(); indexer++ ) {
+                        String currentItem = subject.keys.elementAt(indexer).toString();
+                        System.out.print(currentItem + ' ');
                     };
                 };
-                compilation.addElement(prefect.toString());
-                readData = READ_HEAD.readLine();
-            };
-            READ_HEAD.close();
-            FILE_IN.close();
-        } catch (IOException ex) {
-            System.out.println(ex);
-        };
-        if (player.eventTriggered == true)
-        {
-            String statement1;
-            String statement2;
-            String statement3;
-            String statement4;
-            Boolean consider = new Boolean(false);
-            for (byte stat_cont = 0; stat_cont < compilation.size() ;stat_cont++ ) {
-                System.out.println(compilation.elementAt(stat_cont));
-                if (consider == true)
-                {
-                    if (compilation.elementAt(stat_cont).equals("remove")) {
-                        matrix
-                        [Integer.parseInt(compilation.elementAt(stat_cont + 1))]
-                        [Integer.parseInt(compilation.elementAt(stat_cont + 2))]
-                        = ' ';
-                    };
-                };
-                if (compilation.elementAt(stat_cont).equals("level3") && player.currentLevel == 3)
-                    {consider = true;};
-                if (compilation.elementAt(stat_cont).equals("level2") && player.currentLevel == 2)
-                    {consider = true;};
-                if (compilation.elementAt(stat_cont).equals("level1") && player.currentLevel == 1)
-                    {consider = true;};
-            };
-            player.eventTriggered = false;
+                subject.say = '0';
+                break;
+            case 'm':
+                System.out.println("Game: That is not a move.");
+                subject.say = '0';
+                break;
         };
     };
     static void make_space() {
         System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     };
-
+    static void welcome(Path saveState) {
+        Scanner console_buffer = new Scanner(System.in);
+        System.out.println("******************************************");
+        System.out.println("*                Main Menu               *");
+        System.out.println("*         Type anything to start         *");
+        System.out.println("*        Type \"stats\" for statistics     *");
+        System.out.println("*          Type \"help\" for help          *");
+        if (Files.exists(saveState))
+      { System.out.println("* Save state detected, game will resume. *");
+        System.out.println("*    Type \"delete\" to delete your save   *"); };
+        System.out.println("******************************************");
+        System.out.print(">> ");
+        String command = console_buffer.nextLine();
+        if (command.equals("stats")) {};
+        if (command.equals("help")) {
+            String messageBody = "In adv_game you can use the WASD keys to move and the C key to input commands.\n"
+            + "Commands include; quit, help, health, restart, save, keys. Quit will quit the game, Help will \n"
+            + "show a list of possible commands, Health will invoke your character to say his health, Restart will\n"
+            + "restart the current level and finally Save will save the game in it's current state to be resumed the\n"
+            + " next time the program is run. In this game you also encounter enemies that can be attacked by\n"
+            + " simply moving into them. You will find power-ups that can be collected the same way and some objects\n"
+            + " can be moved by moving towards them as well.\n";
+            JOptionPane.showMessageDialog(null, messageBody , "Adv_game Manual", JOptionPane.INFORMATION_MESSAGE);
+            welcome(saveState);
+        };
+        if (command.equals("delete")) { try { Files.delete(saveState); make_space(); welcome(saveState); }
+        catch(IOException ex) { System.out.println(ex); make_space(); welcome(saveState); } };
+    };
     public static void main(String[] args) throws IOException
     {
         InputStream FILE_IN = null;
@@ -454,17 +614,17 @@ public class adv_game {
             {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
             {'#', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
             {'#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', 'T', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '@', '=', '=', '@', '#', ' ', '#'},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '+', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', 'X', ' ', '#', '#', ' ', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
+            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', '@', '#', ' ', ' ', ' ', '#'},
+            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', 'T', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', '@', '#', '#', '#', '#', ' '},
+            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', ' ', ' '},
+            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '+', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', ' ', ' ', 'X', ' ', '#', '#', ' ', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', ' '},
+            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' '},
         };
         final char[][] levelThree = {
             {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#'},
@@ -512,54 +672,69 @@ public class adv_game {
         };
         ENTITY_PLAYER player = new ENTITY_PLAYER(10, 10);
         Random randomGenerator = new Random();
+        FileCommandInterpreter processor_t = new FileCommandInterpreter();
+        Path saveState = Paths.get("save_state.dat");
         //KeyEvent keyCode = new KeyListener();
 
         JOptionPane.showMessageDialog(null, "Narrator: Use the WASD keys to move the player." + "\nAnd use C to enter a command.");
-        welcome();
+        welcome(saveState);
+        if (Files.exists(saveState)) { player.LOAD("save_state.dat"); };
 
         //setup for level one
         if (randomGenerator.nextBoolean() == true) {
             generate_struct(play_board, boulder, 5, 4);
         } else { generate_struct(play_board, cave, 5, 4); };
         ENTITY_ENEMY_HUNTER monster = new ENTITY_ENEMY_HUNTER(4, 4, 'M');
-        GATEKEEPER l1Gate1 = new GATEKEEPER(11, 13, 323, 0, true);
-        GATEKEEPER l1Gate2 = new GATEKEEPER(11, 15, 232, 1, true);
-        player.currentLevel = 1;
-        do {
+        GATEKEEPER l1Gate1 = new GATEKEEPER(9, 14, 323, 0, true);
+        GATEKEEPER l1Gate2 = new GATEKEEPER(11, 14, 232, 1, true);
+        player.currentLevel = 1; //fix this for resuming game state
+        player.SAVE("level1");
+        while (player.currentLevel == 1) {
             make_space();
             l1Gate1.pickup(play_board, player);
             player.object_reaction(play_board, monster);
-            message_buffer(player);
+            message_postProcessor(player);
             display_board(play_board);
             player.movement_handle();
             monster.auto_hunt(play_board, player);
-        } while (player.currentLevel == 1);
+            processor_t.main_(play_board, player);
+        };
+
         //cleanup and setup for level two
         generate_struct(play_board, levelTwo, 0, 19);
         monster = null;
         ENTITY_ENEMY_CRAWLER snitch = new ENTITY_ENEMY_CRAWLER(5, 15);
-        do {
+        player.SAVE("level2");
+        while (player.currentLevel == 2) {
             make_space();
+            l1Gate1.gateCheck(play_board, player); l1Gate2.gateCheck(play_board, player);
             player.object_reaction(play_board, null);
-            message_buffer(player);
+            message_postProcessor(player);
             display_board(play_board);
             player.movement_handle();
             snitch.crawl(play_board, player);
-        } while (player.currentLevel == 2);
+            processor_t.main_(play_board, player);
+        };
+
         //cleanup and setup for level three
         l1Gate1 = null; l1Gate2 = null;
         snitch = null;
         generate_struct(play_board, levelThree, 0, 19);
         MOVABLE box1 = new MOVABLE(2, 5, 'H');
-        do {
+        GATEKEEPER l2Gate = new GATEKEEPER(9, 4, 890, 1, false);
+        player.SAVE("level3");
+        while (player.currentLevel == 3) {
             make_space();
             box1.react(play_board, player);
+            l2Gate.pickup(play_board, player);
+            l2Gate.gateCheck(play_board, player);
             player.object_reaction(play_board, null);
-            message_buffer(player);
+            message_postProcessor(player);
             display_board(play_board);
             player.movement_handle();
-            process_triggers(play_board, player);
-        } while (player.currentLevel == 3);
+            processor_t.main_(play_board, player);
+        };
+        cleanup();
 
         System.out.println("Narrator: Congradulations, you've won the game.");
     };
