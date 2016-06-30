@@ -117,6 +117,16 @@ interface MainFrame
             { main_board[seed + col][seed + row] = template[col][row]; };
         };
     };
+    static void cleanup() {
+        try {
+            Path level1 = Paths.get("level1");
+            if (Files.exists(level1)) { Files.delete(level1); };
+            Path level2 = Paths.get("level2");
+            if (Files.exists(level2)) { Files.delete(level2); };
+            Path level3 = Paths.get("level3");
+            if (Files.exists(level3)) { Files.delete(level3); };
+        } catch (IOException ex) { System.out.println(ex); };
+    };
 };
 
 @SuppressWarnings("unchecked")
@@ -196,6 +206,7 @@ class ENTITY_PLAYER implements MainFrame
         say = 'd';
         if (health <= 0) {
             System.out.println("Game: You have died. Game Over.");
+            MainFrame.cleanup();
             System.exit(0);
         };
     };
@@ -215,7 +226,7 @@ class ENTITY_PLAYER implements MainFrame
                     String command = console_buffer.nextLine();
                     if (command.equals("health")) { say = 'h'; }
                     else if (command.equals("help")) { say = 'e'; }
-                    else if (command.equals("quit")) { say = 'q'; }
+                    else if (command.equals("quit")) { MainFrame.cleanup(); MainFrame.make_space(); System.out.println("Exiting."); System.exit(0); }
                     else if (command.equals("keys")) { say = 'k'; }
                     else if (command.equals("save")) { SAVE("save_state.dat"); }
                     else if (command.equals("restart")) {
@@ -289,6 +300,15 @@ class ENTITY_PLAYER implements MainFrame
         };
         main_board[x][y] = skin;
         main_board[prev_x][prev_y] = ' ';
+        if (x % enemy.x <= 1 && x / enemy.x <= 1 && y % enemy.y <= 1 && y / enemy.y <= 1) {
+            System.out.println("You: Take that!");
+            enemy.looseHealth(damage);
+            if (enemy.getHealth() <= 0) {
+                enemy.die();
+            };
+            x = prev_x;
+            y = prev_y;
+        };
     };
 };
 interface KEYGUARD {
@@ -486,15 +506,12 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
             if (clear) { override = false; };
         };
         if (adv_game.this_object(x, y) == '#') {
-            //byte tempx, tempy;
-            //tempx = x; tempy = y;
             x = prev_x; y = prev_y;
-            //prev_x = tempx; prev_y = tempy;
             scan(environment, x, y);
             direction = assume();
             override = true;
         };
-        if (target.x % x <= 1 && target.x / x <= 1 && target.y % y <= 1 && target.y / y <= 1) {
+        if (target.x % x <= 1 && target.x / x == 1 && target.y % y <= 1 && target.y / y == 1) {
             target.looseHealth(damage);
         };
         main_board[x][y] = skin;
@@ -613,16 +630,6 @@ public class adv_game implements MainFrame {
             System.out.println(ex);
         };
     };
-    static void cleanup() {
-        try {
-            Path level1 = Paths.get("level1");
-            if (Files.exists(level1)) { Files.delete(level1); };
-            Path level2 = Paths.get("level2");
-            if (Files.exists(level2)) { Files.delete(level2); };
-            Path level3 = Paths.get("level3");
-            if (Files.exists(level3)) { Files.delete(level3); };
-        } catch (IOException ex) { System.out.println(ex); };
-    };
     static char this_object(byte x, byte y) {
         switch( main_board[x][y] ) {
             case '#': return '#';
@@ -653,10 +660,6 @@ public class adv_game implements MainFrame {
             case 'h':
                 System.out.println("You: I seem to be at " + subject.getHealth() + " health.");
                 subject.say = '0';
-                break;
-            case 'q':
-                cleanup();
-                System.out.println("Exiting."); System.exit(0);
                 break;
             case 'k':
                 if (subject.keys.isEmpty()) {
@@ -786,7 +789,7 @@ public class adv_game implements MainFrame {
             player.movement_handle();
             processor_t.main_(player);
         };
-        cleanup();
+        MainFrame.cleanup();
 
         System.out.println("Narrator: Congradulations, you've won the game.");
     };
