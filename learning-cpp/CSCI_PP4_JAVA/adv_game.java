@@ -1,5 +1,5 @@
 /*
- * adv_game (v7.3.6)
+ * adv_game (v8.4.6)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -18,8 +18,109 @@ import java.lang.Byte;
 import java.lang.Integer;
 import javax.swing.JOptionPane;
 
+interface MainFrame
+{
+    final char[][] cave = {
+        {'#','#','#','#','#'},
+        {'#','^',' ',' ','#'},
+        {'#','#','#',' ','#'},
+        {'#','^',' ',' ','#'},
+        {'#','#','#','_','#'},
+    };
+    final char[][] boulder = {
+        {' ','#','#','#',' '},
+        {'#','#','#','#','#'},
+        {'#','#','^',' ',' '},
+        {'#','#','^','#','#'},
+        {' ','#','#','#',' '},
+    };
+    final char[][] levelTwo = {
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        {'#', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+        {'#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', '@', '#', ' ', ' ', ' ', '#'},
+        {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', 'T', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+        {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', '@', '#', '#', '#', '#', ' '},
+        {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', ' ', ' '},
+        {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '+', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', 'X', ' ', '#', '#', ' ', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' '},
+    };
+    final char[][] levelThree = {
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#'},
+        {'#', ' ', ' ', ' ', '#', ' ', ' ', '#', '^', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', '/', 'H', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', 'X', '#'},
+        {'#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
+        {'#', ' ', ' ', '#', '#', ' ', ' ', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+        {'#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+        {'#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
+        {'#', ' ', ' ', '#', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', '#'},
+        {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', '@', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', ' '},
+        {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', '#', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
+        {'#', ' ', ' ', ' ', '/', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' '},
+        {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '},
+        {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' '},
+        {'#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
+    };
+    char[][] main_board = {
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
+        {'#', 'X', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
+        {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
+    };
+    Random randomGenerator = new Random();
+    static void make_space() {
+        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
+    };
+    static void display_board() {
+        for (byte row = 0; row <= 19; row++) {
+            System.out.print("\n");
+            for (byte col = 0; col <= 19; col++)
+            { System.out.print(main_board[row][col] + " "); };
+        };
+    };
+    static void generate_struct(char[][] template, int seed, int size) {
+        for (int col = 0; col <= size; col++) {
+            for (int row = 0; row <= size; row++)
+            { main_board[seed + col][seed + row] = template[col][row]; };
+        };
+    };
+};
+
 @SuppressWarnings("unchecked")
-class ENTITY_PLAYER
+class ENTITY_PLAYER implements MainFrame
 {
     private int health = 400;
     private int damage = 20;
@@ -134,12 +235,12 @@ class ENTITY_PLAYER
             System.out.println("Exception: " + ex);
         };
     };
-    void object_reaction(char[][] play_board, ENTITY_ENEMY_HUNTER enemy) {
-        switch( adv_game.this_object(play_board, x, y) ) {
+    void object_reaction(ENTITY_ENEMY_HUNTER enemy) {
+        switch( adv_game.this_object(x, y) ) {
             case '#':
                 System.out.println("Narrator: You cannot move here.");
                 x = prev_x; y = prev_y;
-                play_board[x][y] = skin;
+                main_board[x][y] = skin;
                 break;
             case 'X':
                 System.out.println("Narrator: Level passed!");
@@ -160,7 +261,7 @@ class ENTITY_PLAYER
                 System.out.println("You: Take that!");
                 enemy.looseHealth(damage);
                 if (enemy.getHealth() <= 0) {
-                    enemy.die(play_board);
+                    enemy.die();
                 };
                 x = prev_x;
                 y = prev_y;
@@ -173,7 +274,7 @@ class ENTITY_PLAYER
                 System.out.println("You: There's a door, it seems to be unlocked.");
                 System.out.println("Narrator: Open it? y/n > ");
                 char response = console_buffer.nextLine().charAt(0);
-                if (response == 'y') { play_board[doorX][doorY] = ' '; };
+                if (response == 'y') { main_board[doorX][doorY] = ' '; };
                 break;
             case '_':
                 doorX = x;
@@ -183,11 +284,11 @@ class ENTITY_PLAYER
                 System.out.println("You: There's a door, it seems to be unlocked.");
                 System.out.println("Narrator: Open it? y/n > ");
                 response = console_buffer.nextLine().charAt(0);
-                if (response == 'y') { play_board[doorX][doorY] = ' '; };
+                if (response == 'y') { main_board[doorX][doorY] = ' '; };
                 break;
         };
-        play_board[x][y] = skin;
-        play_board[prev_x][prev_y] = ' ';
+        main_board[x][y] = skin;
+        main_board[prev_x][prev_y] = ' ';
     };
 };
 interface KEYGUARD {
@@ -200,7 +301,7 @@ interface KEYGUARD {
     };
 };
 @SuppressWarnings("unchecked")
-class GATEKEEPER implements KEYGUARD
+class GATEKEEPER implements KEYGUARD, MainFrame
 {
     private int key;
     byte keyRing;
@@ -220,10 +321,10 @@ class GATEKEEPER implements KEYGUARD
         this.key = key;
     };
     int getKey() { return key; };
-    void pickup(char[][] matrix, ENTITY_PLAYER subject) {
+    void pickup(ENTITY_PLAYER subject) {
         player_x = subject.x;
         player_y = subject.y;
-        if (adv_game.this_object(matrix, player_x, player_y) == '^') {
+        if (adv_game.this_object(player_x, player_y) == '^') {
             System.out.print("You: A key... The number ");
             if (partner == true) {
                 if (((randGenerator.nextBoolean() == false) && (subject.keyTaken != 1) || subject.keyTaken == 2)) {
@@ -239,7 +340,7 @@ class GATEKEEPER implements KEYGUARD
             System.out.print(subject.keys.lastElement() + " is on it.");
         };
     };
-    void gateCheck(char[][] matrix, ENTITY_PLAYER subject) {
+    void gateCheck(ENTITY_PLAYER subject) {
         player_x = subject.x;
         player_y = subject.y;//might not need this
         if (player_x == gateCoord_x && player_y == gateCoord_y && unlocked == false) {
@@ -254,7 +355,7 @@ class GATEKEEPER implements KEYGUARD
                 for (byte indexer = 0; indexer < subject.keys.size(); indexer++)
                 {
                     if (subject.keys.elementAt(indexer).equals(key)) {
-                        matrix[gateCoord_x][gateCoord_y] = ' ';
+                        main_board[gateCoord_x][gateCoord_y] = ' ';
                         gateCoord_x = 0;
                         gateCoord_y = 0;
                         gateSkin = '#';
@@ -267,7 +368,7 @@ class GATEKEEPER implements KEYGUARD
         };
     };
 };
-class MOVABLE
+class MOVABLE implements MainFrame
 {
     byte x;
     byte y;
@@ -286,27 +387,27 @@ class MOVABLE
         if (subject.y < subject.prev_y) { return "west"; };
         return "none";
     };
-    void react(char[][] matrix, ENTITY_PLAYER aggravator) {
+    void react(ENTITY_PLAYER aggravator) {
         if (x == aggravator.x && y == aggravator.y) {
             prev_x = x; prev_y = y;
             if (deduct_approach(aggravator) == "south") { x += 1; };
             if (deduct_approach(aggravator) == "north") { x -= 1; };
             if (deduct_approach(aggravator) == "east") { y += 1; };
             if (deduct_approach(aggravator) == "west") { y -= 1; };
-            if (adv_game.this_object(matrix, x, y) == '#') {
+            if (adv_game.this_object(x, y) == '#') {
                 aggravator.x = aggravator.prev_x;
                 aggravator.y = aggravator.prev_y;
                 x = prev_x;
                 y = prev_y;
                 System.out.println("You: It seems stuck.");
             };
-            if (adv_game.this_object(matrix, x, y) == '*') { aggravator.eventTriggered = true; };
+            if (adv_game.this_object(x, y) == '*') { aggravator.eventTriggered = true; };
         };
-        matrix[x][y] = skin;
+        main_board[x][y] = skin;
     };
 };
 
-class ENTITY_ENEMY_HUNTER
+class ENTITY_ENEMY_HUNTER implements MainFrame
 {
     private int health = 100;
     private int damage = 10;
@@ -316,6 +417,19 @@ class ENTITY_ENEMY_HUNTER
     byte prev_y;
     char skin;
     boolean alive = true;
+    char direction;
+    boolean override;
+    boolean clear = true;
+    char[][] environment = {
+        {' ',' ',' '},
+        {' ',' ',' '},
+        {' ',' ',' '}
+    };
+    int[][][] underlay = {
+        { {0,0},{0,0},{0,0} },
+        { {0,0},{0,0},{0,0} },
+        { {0,0},{0,0},{0,0} }
+    };
     ENTITY_ENEMY_HUNTER(int x, int y, char skin) {
         this.skin = skin;
         this.x = (byte) x;
@@ -325,8 +439,8 @@ class ENTITY_ENEMY_HUNTER
     };
     void looseHealth(int value) { health -= value; };
     int getHealth() { return health; };
-    void die(char[][] grid) {
-        grid[x][y] = ' ';
+    void die() {
+        main_board[x][y] = ' ';
         skin = '#';
         x = 19;
         y = 19;
@@ -334,25 +448,61 @@ class ENTITY_ENEMY_HUNTER
         prev_y = 19;
         alive = false;
     };
-    void auto_hunt(char[][] grid, ENTITY_PLAYER target) {
+    void scan(char[][] template, int x, int y) {
+        for (int col = 0; col <= 2; col++) {
+            for (int row = 0; row <= 2; row++)
+            { underlay[row][col][0] = (col + x - 1);
+              underlay[row][col][1] = (row + y - 1);
+              template[col][row] = main_board[col + x -1][row + y -1]; };
+        };
+    };
+    char assume() {
+        if (environment[2][1] != '#') { return 's'; }
+        else if (environment[1][0] != '#') { return 'd'; }
+        else if (environment[0][1] != '#') { return 'w'; }
+        else if (environment[1][2] != '#') { return 'a'; };
+        return '0';
+    };
+    void auto_hunt(ENTITY_PLAYER target) {
     if (alive == true) {
         prev_x = x; prev_y = y;
-        if (x > target.x) { x -= 1; }
-        else if (x < target.x) { x += 1; }
-        else if (y < target.y) { y += 1; }
-        else if (y > target.y) { y -= 1; };
-        if (adv_game.this_object(grid, x, y) == '#') {
+        switch ( direction ) {
+            case 'w': x -= 1; break;
+            case 's': x += 1; break;
+            case 'd': y += 1; break;
+            case 'a': y -= 1; break;
+        };
+        if (!override) {
+            if (x > target.x) { direction = 'w'; }
+            else if (x < target.x) { direction = 's'; }
+            else if (y < target.y) { direction = 'd'; }
+            else if (y > target.y) { direction = 'a'; };
+        } else {
+            scan(environment, x, y);
+            for (int row = 0; row < 2; row++) {
+                for (int col = 0; col < 2; col++)
+                { if (environment[col][row] == '#') { clear = false; }; };
+            };
+            if (clear) { override = false; };
+        };
+        if (adv_game.this_object(x, y) == '#') {
+            //byte tempx, tempy;
+            //tempx = x; tempy = y;
             x = prev_x; y = prev_y;
+            //prev_x = tempx; prev_y = tempy;
+            scan(environment, x, y);
+            direction = assume();
+            override = true;
         };
         if (target.x % x <= 1 && target.x / x <= 1 && target.y % y <= 1 && target.y / y <= 1) {
             target.looseHealth(damage);
         };
-        grid[x][y] = skin;
-        grid[prev_x][prev_y] = ' ';
+        main_board[x][y] = skin;
+        main_board[prev_x][prev_y] = ' ';
     };
     };
 };
-class ENTITY_ENEMY_CRAWLER
+class ENTITY_ENEMY_CRAWLER implements MainFrame
 {
     private final int damage = 25;
     byte x;
@@ -366,7 +516,7 @@ class ENTITY_ENEMY_CRAWLER
         this.x = (byte) x;
         this.y = (byte) y;
     };
-    void crawl(char[][] grid, ENTITY_PLAYER aggrogate) {
+    void crawl(ENTITY_PLAYER aggrogate) {
         prev_x = x; prev_y = y;
         switch (direction) {
             case 'w': x -= 1; break;
@@ -374,7 +524,7 @@ class ENTITY_ENEMY_CRAWLER
             case 's': x += 1; break;
             case 'd': y += 1; break;
         };
-        if(adv_game.this_object(grid, x, y) == '#' || adv_game.this_object(grid, x, y) == 'X') {
+        if(adv_game.this_object(x, y) == '#' || adv_game.this_object(x, y) == 'X') {
             x = prev_x; y = prev_y;
             switch (direction) {
                 case 'w': if (rgen.nextInt(40) >= 25) {direction = 'a';} else {direction = 'd';}; break;
@@ -388,15 +538,15 @@ class ENTITY_ENEMY_CRAWLER
         };
         if (skin == '|') { skin = '-'; }
         else { skin = '|'; };
-        grid[x][y] = skin;
-        grid[prev_x][prev_y] = ' ';
+        main_board[x][y] = skin;
+        main_board[prev_x][prev_y] = ' ';
     };
 };
-class FileCommandInterpreter
+class FileCommandInterpreter implements MainFrame
 {
     String lastRun = new String();
     Integer times = new Integer(0);
-    void main_(char[][] matrix, ENTITY_PLAYER player)
+    void main_(ENTITY_PLAYER player)
     {
     if (player.eventTriggered == true)
     {
@@ -413,7 +563,7 @@ class FileCommandInterpreter
                         break;
                     };
                     if (statement.equals("remove")) {
-                        matrix
+                        main_board
                         [Integer.parseInt(compilation.elementAt(indexer + 1))]
                         [Integer.parseInt(compilation.elementAt(indexer + 2))]
                         = ' ';
@@ -434,7 +584,7 @@ class FileCommandInterpreter
     };
 };
 
-public class adv_game {
+public class adv_game implements MainFrame {
     static void processFile(String file_name, Vector<String> compilation) {
         try {
             Path file_path = Paths.get(file_name);
@@ -473,23 +623,8 @@ public class adv_game {
             if (Files.exists(level3)) { Files.delete(level3); };
         } catch (IOException ex) { System.out.println(ex); };
     };
-    static void display_board(char[][] play_board) {
-        for (byte row = 0; row <= 19; row++) {
-            System.out.print("\n");
-            for (byte col = 0; col <= 19; col++) {
-                System.out.print(play_board[row][col] + " ");
-            };
-        };
-    };
-    static void generate_struct(char[][] play_board, char[][] template, int seed, int size) {
-        for (int col = 0; col <= size; col++) {
-            for (int row = 0; row <= size; row++) {
-                play_board[seed + col][seed + row] = template[col][row];
-            };
-        };
-    };
-    static char this_object(char[][] matrix, byte x, byte y) {
-        switch( matrix[x][y] ) {
+    static char this_object(byte x, byte y) {
+        switch( main_board[x][y] ) {
             case '#': return '#';
             case 'M': return 'M';
             case 'X': return 'X';
@@ -541,9 +676,7 @@ public class adv_game {
                 break;
         };
     };
-    static void make_space() {
-        System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-    };
+
     static void welcome(Path saveState) {
         Scanner console_buffer = new Scanner(System.in);
         System.out.println("******************************************");
@@ -569,8 +702,8 @@ public class adv_game {
             JOptionPane.showMessageDialog(null, messageBody , "Adv_game Manual", JOptionPane.INFORMATION_MESSAGE);
             welcome(saveState);
         };
-        if (command.equals("delete")) { try { Files.delete(saveState); make_space(); welcome(saveState); }
-        catch(IOException ex) { System.out.println(ex); make_space(); welcome(saveState); } };
+        if (command.equals("delete")) { try { Files.delete(saveState); MainFrame.make_space(); welcome(saveState); }
+        catch(IOException ex) { System.out.println(ex); MainFrame.make_space(); welcome(saveState); } };
     };
     public static void main(String[] args) throws IOException
     {
@@ -590,88 +723,7 @@ public class adv_game {
             FILE_OUT.close();
         };
         //essensial variables
-        final char[][] cave = {
-            {'#','#','#','#','#'},
-            {'#','^',' ',' ','#'},
-            {'#','#','#',' ','#'},
-            {'#','^',' ',' ','#'},
-            {'#','#','#','_','#'},
-        };
-        final char[][] boulder = {
-            {' ','#','#','#',' '},
-            {'#','#','#','#','#'},
-            {'#','#','^',' ',' '},
-            {'#','#','^','#','#'},
-            {' ','#','#','#',' '},
-        };
-        final char[][] levelTwo = {
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-            {'#', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-            {'#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', '@', '#', ' ', ' ', ' ', '#'},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', 'T', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', ' ', '#'},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', '#', '@', '#', '#', '#', '#', ' '},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', ' ', ' '},
-            {' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '+', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', 'X', ' ', '#', '#', ' ', ' ', ' ', ' ', '+', '+', '+', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' '},
-        };
-        final char[][] levelThree = {
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', '#', '#'},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', '#', '^', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', '/', 'H', ' ', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', 'X', '#'},
-            {'#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '*', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#'},
-            {'#', ' ', ' ', '#', '#', ' ', ' ', '#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', '#', '#', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', '@', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', '#', ' '},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', '#', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', '#', '#', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' '},
-            {'#', ' ', ' ', ' ', '/', ' ', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', '#', ' ', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', '#', '#', '#', '#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' '},
-            {'#', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#', '#', '#', '#', '#', ' ', ' ', ' ', ' '},
-            {'#', '#', '#', '#', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-        };
-        char[][] play_board = {
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
-            {'#', 'X', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', '#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
-        };
         ENTITY_PLAYER player = new ENTITY_PLAYER(10, 10);
-        Random randomGenerator = new Random();
         FileCommandInterpreter processor_t = new FileCommandInterpreter();
         Path saveState = Paths.get("save_state.dat");
         //KeyEvent keyCode = new KeyListener();
@@ -682,57 +734,57 @@ public class adv_game {
 
         //setup for level one
         if (randomGenerator.nextBoolean() == true) {
-            generate_struct(play_board, boulder, 5, 4);
-        } else { generate_struct(play_board, cave, 5, 4); };
+            MainFrame.generate_struct(boulder, 5, 4);
+        } else { MainFrame.generate_struct(cave, 5, 4); };
         ENTITY_ENEMY_HUNTER monster = new ENTITY_ENEMY_HUNTER(4, 4, 'M');
         GATEKEEPER l1Gate1 = new GATEKEEPER(9, 14, 323, 0, true);
         GATEKEEPER l1Gate2 = new GATEKEEPER(11, 14, 232, 1, true);
-        player.currentLevel = 1; //fix this for resuming game state
+        player.currentLevel = 1;
         player.SAVE("level1");
         while (player.currentLevel == 1) {
-            make_space();
-            l1Gate1.pickup(play_board, player);
-            player.object_reaction(play_board, monster);
+            MainFrame.make_space();
+            l1Gate1.pickup(player);
+            player.object_reaction(monster);
             message_postProcessor(player);
-            display_board(play_board);
+            MainFrame.display_board();
             player.movement_handle();
-            monster.auto_hunt(play_board, player);
-            processor_t.main_(play_board, player);
+            monster.auto_hunt(player);
+            processor_t.main_(player);
         };
 
         //cleanup and setup for level two
-        generate_struct(play_board, levelTwo, 0, 19);
+        MainFrame.generate_struct(levelTwo, 0, 19);
         monster = null;
         ENTITY_ENEMY_CRAWLER snitch = new ENTITY_ENEMY_CRAWLER(5, 15);
         player.SAVE("level2");
         while (player.currentLevel == 2) {
-            make_space();
-            l1Gate1.gateCheck(play_board, player); l1Gate2.gateCheck(play_board, player);
-            player.object_reaction(play_board, null);
+            MainFrame.make_space();
+            l1Gate1.gateCheck(player); l1Gate2.gateCheck(player);
+            player.object_reaction(null);
             message_postProcessor(player);
-            display_board(play_board);
+            MainFrame.display_board();
             player.movement_handle();
-            snitch.crawl(play_board, player);
-            processor_t.main_(play_board, player);
+            snitch.crawl(player);
+            processor_t.main_(player);
         };
 
         //cleanup and setup for level three
         l1Gate1 = null; l1Gate2 = null;
         snitch = null;
-        generate_struct(play_board, levelThree, 0, 19);
+        MainFrame.generate_struct(levelThree, 0, 19);
         MOVABLE box1 = new MOVABLE(2, 5, 'H');
         GATEKEEPER l2Gate = new GATEKEEPER(9, 4, 890, 1, false);
         player.SAVE("level3");
         while (player.currentLevel == 3) {
-            make_space();
-            box1.react(play_board, player);
-            l2Gate.pickup(play_board, player);
-            l2Gate.gateCheck(play_board, player);
-            player.object_reaction(play_board, null);
+            MainFrame.make_space();
+            box1.react(player);
+            l2Gate.pickup(player);
+            l2Gate.gateCheck(player);
+            player.object_reaction(null);
             message_postProcessor(player);
-            display_board(play_board);
+            MainFrame.display_board();
             player.movement_handle();
-            processor_t.main_(play_board, player);
+            processor_t.main_(player);
         };
         cleanup();
 

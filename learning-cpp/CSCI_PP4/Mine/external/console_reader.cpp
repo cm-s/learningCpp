@@ -18,7 +18,7 @@ void InputReader::input_constructor(string input_type) {
 
 void InputReader::input_constructor(string input_type, string options) {
     if (input_type == "string") {
-        vector<char>[options.size()] accepted_mchar_inputs;
+        vector<char> accepted_mchar_inputs;
         for (size_t index = 0; index < options.size(); index++) {
             accepted_mchar_inputs.push_back(options[index]);
         };
@@ -50,8 +50,8 @@ void InputReader::string_handle(string& input_type_string, vector<char> accepted
     } else {
         bool* containsDigit;
         containsDigit = new bool;
-        *containsDigit = false;
         do {
+            *containsDigit = false;
             for (size_t index = 0; index <= sizeof(input_type_string); index++) {
                 if (isdigit(input_type_string[index]) != false) { *containsDigit = true; break; }
                 else { *containsDigit = false; };
@@ -106,7 +106,8 @@ void InputReader::boolean_handle(string& input_type_bool) {
     *valid = false;
     do {
         if (input_type_bool.size() > 1) { cout << "\nPlease enter \"y\" or \"n\"" << endl; };
-        if (tolower(input_type_bool[0]) == 'y') { *valid = true; break; } else { cin >> input_type_bool; };
+        if (tolower(input_type_bool[0]) == 'y') { *valid = true; break; }
+        else { cout << "Enter \"y\" to continue." << endl; cin >> input_type_bool; };
     } while(*valid == 0);
     //inputting returng value later
 };
