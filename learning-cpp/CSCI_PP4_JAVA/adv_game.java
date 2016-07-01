@@ -1,5 +1,5 @@
 /*
- * adv_game (v8.4.6)
+ * adv_game (v8.5.6)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -300,15 +300,6 @@ class ENTITY_PLAYER implements MainFrame
         };
         main_board[x][y] = skin;
         main_board[prev_x][prev_y] = ' ';
-        if (x % enemy.x <= 1 && x / enemy.x <= 1 && y % enemy.y <= 1 && y / enemy.y <= 1) {
-            System.out.println("You: Take that!");
-            enemy.looseHealth(damage);
-            if (enemy.getHealth() <= 0) {
-                enemy.die();
-            };
-            x = prev_x;
-            y = prev_y;
-        };
     };
 };
 interface KEYGUARD {
@@ -445,11 +436,7 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
         {' ',' ',' '},
         {' ',' ',' '}
     };
-    int[][][] underlay = {
-        { {0,0},{0,0},{0,0} },
-        { {0,0},{0,0},{0,0} },
-        { {0,0},{0,0},{0,0} }
-    };
+    int ran;
     ENTITY_ENEMY_HUNTER(int x, int y, char skin) {
         this.skin = skin;
         this.x = (byte) x;
@@ -471,9 +458,7 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
     void scan(char[][] template, int x, int y) {
         for (int col = 0; col <= 2; col++) {
             for (int row = 0; row <= 2; row++)
-            { underlay[row][col][0] = (col + x - 1);
-              underlay[row][col][1] = (row + y - 1);
-              template[col][row] = main_board[col + x -1][row + y -1]; };
+            { template[col][row] = main_board[col + x -1][row + y -1]; };
         };
     };
     char assume() {
@@ -492,6 +477,7 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
             case 'd': y += 1; break;
             case 'a': y -= 1; break;
         };
+        if ( ran > 4 ) { override = false; };
         if (!override) {
             if (x > target.x) { direction = 'w'; }
             else if (x < target.x) { direction = 's'; }
@@ -504,6 +490,7 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
                 { if (environment[col][row] == '#') { clear = false; }; };
             };
             if (clear) { override = false; };
+            ran++;
         };
         if (adv_game.this_object(x, y) == '#') {
             x = prev_x; y = prev_y;

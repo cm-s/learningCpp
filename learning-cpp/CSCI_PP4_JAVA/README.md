@@ -1,5 +1,7 @@
 ###This is a derivative of the adv_game program first created in C++.
 
+Versions above 8.4.6 are updated incrementally;
+
 Version update changes from version 7.3.6 to 8.4.6;
 
 * Reformed the structure of main(), grids and essential algorithms are now incorporated into a "MainFrame"
