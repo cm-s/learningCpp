@@ -1,5 +1,5 @@
 /*
- * adv_game (v8.5.6)
+ * adv_game (v8.8.8)
  * Adventuring game in which a player tarverses a retro-style board or grid, solving pizzles and avoiding enmeies
  * in order to get to the next level and ultimately win the game.
  *
@@ -426,11 +426,12 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
     byte y;
     byte prev_x;
     byte prev_y;
-    char skin;
     boolean alive = true;
-    char direction;
     boolean override;
     boolean clear = true;
+    char skin;
+    char direction;
+    char mutedAxis = '0';
     char[][] environment = {
         {' ',' ',' '},
         {' ',' ',' '},
@@ -456,17 +457,38 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
         alive = false;
     };
     void scan(char[][] template, int x, int y) {
-        for (int col = 0; col <= 2; col++) {
-            for (int row = 0; row <= 2; row++)
-            { template[col][row] = main_board[col + x -1][row + y -1]; };
-        };
+        try {
+            for (int col = 0; col <= 2; col++) {
+                for (int row = 0; row <= 2; row++)
+                { template[col][row] = main_board[col + x -1][row + y -1]; };
+            };
+        } catch (ArrayIndexOutOfBoundsException ex) { clear = true; override = false; };
     };
-    char assume() {
-        if (environment[2][1] != '#') { return 's'; }
-        else if (environment[1][0] != '#') { return 'd'; }
-        else if (environment[0][1] != '#') { return 'w'; }
-        else if (environment[1][2] != '#') { return 'a'; };
-        return '0';
+    char assume(ENTITY_PLAYER target) {
+        int cornerdetect = 0;
+        char conclusion = '0';
+        if (environment[2][1] == '#') {
+            if (target.y < y && mutedAxis != 'y') { conclusion = 'a'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }
+            else { conclusion = 'd'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }; }
+        if (environment[1][0] == '#') {
+            if (target.x > x && mutedAxis != 'x') { conclusion = 's'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }
+            else { conclusion = 'w'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }; }
+        if (environment[0][1] == '#') {
+            if (target.y < y && mutedAxis != 'y') { conclusion = 'a'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }
+            else { conclusion = 'd'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }; }
+        if (environment[1][2] == '#') {
+            if (target.x > x && mutedAxis != 'x') { conclusion = 's'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }
+            else { conclusion = 'w'; cornerdetect = (cornerdetect == 0) ? 1 : 2; }; };
+        System.out.println("cornerdetect: " + cornerdetect);
+        if (cornerdetect == 2) {
+            switch ( direction ) {
+                case 'w': return 's';
+                case 's': return 'w';
+                case 'a': return 'd';
+                case 'd': return 'a';
+            };
+        };
+        return conclusion;
     };
     void auto_hunt(ENTITY_PLAYER target) {
     if (alive == true) {
@@ -477,32 +499,40 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
             case 'd': y += 1; break;
             case 'a': y -= 1; break;
         };
-        if ( ran > 4 ) { override = false; };
+        if ( ran > 5 ) { override = false; mutedAxis = '0'; ran = 0; };
         if (!override) {
             if (x > target.x) { direction = 'w'; }
-            else if (x < target.x) { direction = 's'; }
-            else if (y < target.y) { direction = 'd'; }
-            else if (y > target.y) { direction = 'a'; };
+            else if (x < target.x && mutedAxis != 'x') { direction = 's'; }
+            else if (y < target.y && mutedAxis != 'y') { direction = 'd'; }
+            else if (y > target.y && mutedAxis != 'y') { direction = 'a'; };
         } else {
             scan(environment, x, y);
             for (int row = 0; row < 2; row++) {
                 for (int col = 0; col < 2; col++)
-                { if (environment[col][row] == '#') { clear = false; }; };
+                { if (environment[col][row] == '#') { clear = false; }; System.out.println("Env: " + environment[col][row]); };
             };
-            if (clear) { override = false; };
+            if (clear) { override = false; }
+            else { override = true; };
             ran++;
         };
         if (adv_game.this_object(x, y) == '#') {
             x = prev_x; y = prev_y;
             scan(environment, x, y);
-            direction = assume();
+            direction = assume(target);
             override = true;
+            switch ( direction ) {
+                case 'w': mutedAxis = 'x'; break;
+                case 'a': mutedAxis = 'y'; break;
+                case 's': mutedAxis = 'x'; break;
+                case 'd': mutedAxis = 'y'; break;
+            };
         };
         if (target.x % x <= 1 && target.x / x == 1 && target.y % y <= 1 && target.y / y == 1) {
             target.looseHealth(damage);
         };
         main_board[x][y] = skin;
         main_board[prev_x][prev_y] = ' ';
+        System.out.println("direction: " + direction);
     };
     };
 };
@@ -515,7 +545,6 @@ class ENTITY_ENEMY_CRAWLER implements MainFrame
     byte prev_y;
     char skin = '|';
     char direction = 'w';
-    Random rgen = new Random();
     ENTITY_ENEMY_CRAWLER(int x, int y) {
         this.x = (byte) x;
         this.y = (byte) y;
@@ -531,10 +560,10 @@ class ENTITY_ENEMY_CRAWLER implements MainFrame
         if(adv_game.this_object(x, y) == '#' || adv_game.this_object(x, y) == 'X') {
             x = prev_x; y = prev_y;
             switch (direction) {
-                case 'w': if (rgen.nextInt(40) >= 25) {direction = 'a';} else {direction = 'd';}; break;
-                case 'a': if (rgen.nextInt(40) >= 25) {direction = 's';} else {direction = 'w';}; break;
-                case 's': if (rgen.nextInt(40) >= 20) {direction = 'd';} else {direction = 'a';}; break;
-                case 'd': if (rgen.nextInt(40) <= 20) {direction = 'w';} else {direction = 's';}; break;
+                case 'w': if (randomGenerator.nextInt(40) >= 25) { direction = 'a'; } else { direction = 'd'; }; break;
+                case 'a': if (randomGenerator.nextInt(40) >= 25) { direction = 's'; } else { direction = 'w'; }; break;
+                case 's': if (randomGenerator.nextInt(40) >= 20) { direction = 'd'; } else { direction = 'a'; }; break;
+                case 'd': if (randomGenerator.nextInt(40) <= 20) { direction = 'w'; } else { direction = 's'; }; break;
             };
         };
         if (aggrogate.x % x <= 1 && aggrogate.x / x <= 1 && aggrogate.y % y <= 1 && aggrogate.y / y <= 1) {
