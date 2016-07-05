@@ -3,132 +3,246 @@
 #include <cstring>
 #include <time.h>
 #include <stdlib.h>
+#include <vector>
+#include "cm.std.cpp"
 using namespace std;
 
-class item
-{
+class NULL_ENTITY {
 public:
-    short int keyNum;
-    /**
-     * Empty constructor. This function has the only practical purpose of offsetting the memory of one item
-     * from another, so the data from the creation of another item does not fit into the structure of another.
-     *
-     * @param the number distinguishing which key is being created. (Will always be 1 or 2)
-     */
-    item(short int keyNum);
-    string id = "00";
-    short int getKey() { return key; };
-    void setKey(int value) { key = value; };
-    ~item();
-private:
-    short int keyNumber;
-    short int key;
+    void looseHealth(int none) {};
+    short int x = 0;
+    short int y = 0;
+    char skin = '#';
+    short int prev_x = 0;
+    short int prev_y = 0;
+    string deduct_approach(auto none) {};
 };
 
-class player
-{
-public:
-    player();
-    bool firstPlay = true;
-    int x = 10;
-    int y = 10;
-    char skin = '&';
-    int prev_x_coord;
-    int prev_y_coord;
-    item *keeper1key = new item(1);
-    item *keeper2key = new item(2);
-    string gateSignature;
-    /**
-     * Function to subtract life from the player and output what life the player has left.
-     *
-     * @param intager value describing how much life is to be subtracted from the player.
-     */
-    void looseLife(double life_lost) {
-        life -= life_lost;
-        cout << "\nYou've been attacked. You have " << getLife() << " life remaining." << endl;
+char collision_report(char current_grid[20][20], auto obj) {
+    switch (current_grid[obj -> x][obj -> y]) {
+        case '#': return '#';
+        case 'X': return 'X';
+        case 'M': return 'M';
+        case '@': return '@';
+        case '/': return '/';
+        case 'H': return 'H';
+        case '^': return '^';
+        case 'T': return 'T';
+        case '+': return '+';
+        case '&': return '&';
     };
-    int getLife() { return life; };
-    void gainLife(int value) { life += value; };
+};
+//entity declarations
+class PLAYER {
+public:
+    CMSTD cmstd;
+    vector<string> pstack;
+    string signature;
+    char direction;
+    short int gameLevel = 1;
+    short int prev_x;
+    short int prev_y;
+    short int x;
+    short int y;
+    char skin;
+    const int &bindInt;
+    const char &bindSkin;
+    PLAYER(short int x, short int y, char skin): bindInt(x), x{x}, y{y}, bindSkin(x), skin{skin} {
+        prev_x = x;
+        prev_y = y;
+    };
     int getDamage() { return damage; };
-    int setDamage(short int gain) { damage += gain; };
-    ~player();
-private:
-    double life = 500;
-    double damage = 50;
-};
+    int getHealth() { return health; };
+    short int retrieve_key(short int set, short int index) { return keyring[set][index]; };
+    void looseHealth(int value) { health -= value; };
+    void attack(auto target) { target.looseHealth(damage); };
 
-class enemy
-{
-public:
-    double dmg; double hp;
-    enemy(double dmg, double hp);
-    int x, y;
-    char skin = 'M';
-    int prev_x_coord;
-    int prev_y_coord;
-    bool entry = false;
-    void attack(player& targetEntity) { targetEntity.looseLife(damage); };
-    /**
-     * Automatically moves the enemy towards the player after the player has made a move.
-     *
-     * @param grid variable.
-     * @param character targeted to be moved towards.
-     */
-    void auto_move(char current_grid[20][20], player& character);
-    /**
-     * Function for subtracting life from the enemy and checking if the enemy has any life left.
-     *
-     * @param grid variable.
-     * @param player to damage the parent enemy.
-     */
-    void looseLife(char current_grid[20][20], player character);
-    double getLife() { return life; };
-    double getDamage() { return damage; };
-    ~enemy();
-private:
-    double life;
-    double damage;
-};
-
-class lock
-{
-public:
-    lock();
-    int key;
-    int x, y;
-    int extX = 21;
-    int extY = 21;
-    char skin = '@';
-    string gateSignature;
-    bool unlocked = false;
-    /**
-     * Function for moving the player out of the gate's grid cell and for informing the player
-     * what key can unlock the gate.
-     *
-     * @param grid variable.
-     * @param player whom will be moved out of the cell that is occupied by the skin of the gate.
-     */
-    void detect(char current_grid[20][20], player& character);
-    /**
-     * Function called upon the player's command. Essentially unlocks the gate that was previously attempted to be moved through.
-     * Makes the gate passable.
-     *
-     * @param grid variable.
-     * @param player to be checked for having the correct key.
-     */
-    void unlock(char current_grid[20][20], player& character);
-    ~lock();
-};
-
-class box
-{
-public:
-    int x, y;
-    char approach;
-    void move() {
-        if (approach == 'l') { y += 1; };
-        if (approach == 'r') { y -= 1; };
-        if (approach == 'd') { x -= 1; };
-        if (approach == 'u') { x += 1; };
+    class key
+    {
+    private:
+        short int keycode;
+    public:
+        const short int &codecast;
+        key(short int index): codecast(index), keycode{keycode} {
+            cout << "You: It seems I've found a key, the number on it is " << getCode() << '.' << endl;
+        };
+        short int getCode() { return keycode; };
     };
+
+    void move() {
+        prev_x = x;
+        prev_y = y;
+        string command;
+        cout << "Game: Make a move: ";
+        cin >> direction;
+        switch (toupper(direction)) {
+            case 'W': x -= 1; break;
+            case 'A': y -= 1; break;
+            case 'S': x += 1; break;
+            case 'D': y += 1; break;
+            case 'C':
+                cout << "\nEnter a command: ";
+                cin >> command;
+                if (command == "help") {
+                    cout << "\nNarrator: You can enter the following commands: \'help\' \'unlock\' \'keys\' \'open\' \'health\'";
+                } else if (command == "health") {
+                    cout << "You: It seems my health is " << getHealth() << '.';
+                } else if (command == "open") {
+                    if (signature[0] == 'd') {
+                        internal_command = 'o';
+                    };
+                }
+                break;
+            default:
+                cout << "Game: (" << direction << ") isn't a move." << endl;
+                break;
+        };
+    };
+    void object_reaction(char current_grid[20][20]) {
+        switch (collision_report(current_grid, this)) {
+            case '#':
+                x = prev_x;
+                y = prev_y;
+                cout << "Game: You cannot move here." << endl;
+                break;
+            case 'X':
+                cout << "Game: You've passed the level!" << endl;
+                gameLevel += 1;
+                break;
+            case '^': //needs to be perfected
+                int* hasKey; hasKey = new int; *hasKey = 0;
+                if (rand()%2 == 0 & *hasKey != 1) {
+                    key key1(retrieve_key(0, 0));
+                    *hasKey = 1;
+                } else { key key1(retrieve_key(0, 1)); };
+                break;
+            case 'T':
+                cout << "You: Wow, a sword! This should help out." << endl;
+                damage += 20;
+                cout << "Narrator: Your damage has increased to " << damage << '.' << endl;
+                break;
+            case '+':
+                health += 25;
+                cout << "Narrator: You've picked up a health shard, your health is now at " << health << '.' << endl;
+                break;
+            case 'M':
+                cout << "You: Take that!" << endl;
+                pstack.push_back("attack_enemy");
+                x = prev_x;
+                y = prev_y;
+                break;
+            case '/':
+                if (internal_command == 'o') { current_grid[x][y] = ' '; }
+                else {
+                    cout << "You: There's a door, maybe it isn't locked." << endl;
+                    signature = 'd' + to_string(x) + to_string(y);
+                    x = prev_x;
+                    y = prev_y;
+                };
+                break;
+            case 'H':
+                pstack.push_back("box_movement");
+                break;
+        };
+    };
+    void postProcessor(char current_grid[20][20], auto aggrogate1, auto aggrogate2, auto aggrogate3) {
+        for (size_t call = 0; call < pstack.size(); call++) {
+            if (pstack[call] == "attack_enemy") {
+                attack(aggrogate1);
+            };
+            if (pstack[call] == "box_movement") {
+                if (x == aggrogate2.x && y == aggrogate2.y) {
+                    aggrogate2.prev_x = aggrogate2.x;
+                    aggrogate2.prev_y = aggrogate2.y;
+                    if (aggrogate2.deduct_approach(this) == "east") { aggrogate2.y -= 1; };
+                    if (aggrogate2.deduct_approach(this) == "west") { aggrogate2.y += 1; };
+                    if (aggrogate2.deduct_approach(this) == "north") { aggrogate2.x -= 1; };
+                    if (aggrogate2.deduct_approach(this) == "south") { aggrogate2.x += 1; };
+                    if (current_grid[aggrogate2.x][aggrogate2.y] == '#') {
+                        aggrogate2.x = aggrogate2.prev_x;
+                        aggrogate2.y = aggrogate2.prev_y;
+                        x = prev_y;
+                        y = prev_y;
+                    };
+                } else {
+
+                };
+            };
+        };
+    };
+private:
+    char internal_command;
+    int damage = 20;
+    int health = 400;
+    int keyring[10][2] = {
+        {323, 232}, {890, 208},
+        {157, 176}, {225, 755},
+        {114, 495}, {611, 815},
+        {212, 311}, {732, 326},
+        {985, 860}, {615, 524}
+    };
+};
+class ENEMY {
+public:
+    short int prev_x;
+    short int prev_y;
+    short int x;
+    short int y;
+    char skin;
+    const short int &bindx;
+    const char &bindSkin;
+    ENEMY(short int x, short int y, char skin): bindx(x), x{x}, y{y}, bindSkin(x), skin{skin} {
+        cout << "Narrator: You've encountered an enemy!" << endl;
+        prev_x = x;
+        prev_y = y;
+    };
+    void looseHealth(int value) {
+        health -= value;
+        if (health <= 0) {
+            delete this;
+        };
+    };
+    void attack(PLAYER target) { target.looseHealth(damage); };
+    void autoMove(char current_grid[20][20], PLAYER target) {
+        prev_x = x; prev_y = y;
+        if (x < target.x) { x += 1; }
+        else if (x > target.x) { x -= 1; }
+        else if (y < target.y) { y += 1; }
+        else if (y > target.y) { y -= 1; };
+        switch (collision_report(current_grid, this)) {
+            case '#':
+                x = prev_x;
+                y = prev_y;
+                break;
+            case '&':
+                attack(target);
+                break;
+        };
+    };
+private:
+    int damage = 20;
+    int health = 50;
+};
+
+class BOX {
+public:
+    short int prev_x;
+    short int prev_y;
+    short int x;
+    short int y;
+    char skin;
+    const char& bindSkin;
+    const char& bindInt;
+    BOX(short int x, short int y, char skin): bindInt(x), x{x}, y{y}, bindSkin(x), skin{skin} {  };
+    string deduct_approach(auto subject) {
+        if (subject -> y > subject -> prev_y) { return "east"; };
+        if (subject -> y < subject -> prev_y) { return "west"; };
+        if (subject -> x > subject -> prev_x) { return "south"; };
+        if (subject -> x < subject -> prev_x) { return "north"; };
+    };
+};
+
+class GATE {
+public:
+    GATE(short int x, short int y, char skin) {  };
 };

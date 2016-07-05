@@ -1,9 +1,8 @@
 #include "console_reader.h"
 
 void InputReader::input_constructor(string input_type) {
-    vector<char> empty;
     if (input_type == "string") {
-        string_handle(input_type_string, empty);
+        string_handle(input_type_string, NULL);
     } else if (input_type == "int") {
         intager_handle(input_type_int);
     } else if (input_type == "bool") {
@@ -15,12 +14,14 @@ void InputReader::input_constructor(string input_type) {
     };
 };
 
-
 void InputReader::input_constructor(string input_type, string options) {
     if (input_type == "string") {
-        vector<char> accepted_mchar_inputs;
-        for (size_t index = 0; index < options.size(); index++) {
-            accepted_mchar_inputs.push_back(options[index]);
+        accepted_mchar_inputs = new string[sizeof(options)/2];
+        int* count;
+        count = new int;
+        for (size_t item = 0; item < options.size(); item++) {
+            if ((int) options[item] == 32) { *count += 1; }//No part of this loop weilds any result
+            else { accepted_mchar_inputs[*count][item] = options[item]; };//error happened here... deleting is increasingly impossible
         };
         string_handle(input_type, accepted_mchar_inputs);
     } else if (input_type == "int") {
@@ -36,7 +37,7 @@ void InputReader::input_constructor(string input_type, string options) {
     };
 };
 
-void InputReader::string_handle(string& input_type_string, vector<char> accepted_inputs) {
+void InputReader::string_handle(string& input_type_string, string* accepted_mchar_inputs) {
     cin >> input_type_string;
     if (input_type_string.size() <= 1) {
         bool* is_char;
@@ -50,8 +51,8 @@ void InputReader::string_handle(string& input_type_string, vector<char> accepted
     } else {
         bool* containsDigit;
         containsDigit = new bool;
+        *containsDigit = false;
         do {
-            *containsDigit = false;
             for (size_t index = 0; index <= sizeof(input_type_string); index++) {
                 if (isdigit(input_type_string[index]) != false) { *containsDigit = true; break; }
                 else { *containsDigit = false; };
@@ -106,8 +107,7 @@ void InputReader::boolean_handle(string& input_type_bool) {
     *valid = false;
     do {
         if (input_type_bool.size() > 1) { cout << "\nPlease enter \"y\" or \"n\"" << endl; };
-        if (tolower(input_type_bool[0]) == 'y') { *valid = true; break; }
-        else { cout << "Enter \"y\" to continue." << endl; cin >> input_type_bool; };
+        if (tolower(input_type_bool[0]) == 'y') { *valid = true; break; } else { cin >> input_type_bool; };
     } while(*valid == 0);
     //inputting returng value later
 };
