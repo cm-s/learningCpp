@@ -142,6 +142,8 @@ public:
                 };
                 break;
         };
+        current_grid[x][y] = skin;
+        current_grid[prev_x][prev_y] = ' ';
     };
 private:
     char internal_command;
@@ -191,6 +193,8 @@ public:
                 attack(target);
                 break;
         };
+        current_grid[x][y] = skin;
+        current_grid[prev_x][prev_y] = ' ';
     };
 private:
     int damage = 20;

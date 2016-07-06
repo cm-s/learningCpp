@@ -122,13 +122,7 @@ public:
     void makeSpace() {
         cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
     };
-    void display_grid(char current_grid[20][20], auto obj1, auto obj2, auto obj3) {
-        current_grid[obj3.prev_x][obj3.prev_y] = ' ';
-        current_grid[obj3.x][obj3.y] = obj3.skin;
-        current_grid[obj2.prev_x][obj2.prev_y] = ' ';
-        current_grid[obj2.x][obj2.y] = obj2.skin;
-        current_grid[obj1.prev_x][obj1.prev_y] = ' ';
-        current_grid[obj1.x][obj1.y] = obj1.skin;
+    void display_grid(char current_grid[20][20]) {
         for (size_t row =0; row <= (19); row++) {
             for (size_t col =0; col <= (19); col++) {
                 cout << current_grid[row][col] << ' ';
@@ -162,7 +156,7 @@ if (genRand(2, 0)) {
     MainFrame.generate(MainFrame.current_grid, MainFrame.cave, genRand(13, 4), 5);
 } else { MainFrame.generate(MainFrame.current_grid, MainFrame.boulder, genRand(13, 4), 5); };
 do {
-    MainFrame.display_grid(MainFrame.current_grid, character, monster, nullent);
+    MainFrame.display_grid(MainFrame.current_grid);
     character.move();
     monster.autoMove(MainFrame.current_grid, character);
     MainFrame.makeSpace();
@@ -171,7 +165,7 @@ do {
 //cleanup and setting up level two
 MainFrame.generate(MainFrame.current_grid, MainFrame.levelTwo, 0, 20);
 do {
-    MainFrame.display_grid(MainFrame.current_grid, character, nullent, nullent);
+    MainFrame.display_grid(MainFrame.current_grid);
     character.move();
     MainFrame.makeSpace();
     character.object_reaction(MainFrame.current_grid, nullent);
@@ -181,7 +175,7 @@ BOX box1(2, 5, 'H');
 BOX box2(3, 8, 'H');
 MainFrame.generate(MainFrame.current_grid, MainFrame.levelThree, 0, 20);
 do {
-    MainFrame.display_grid(MainFrame.current_grid, character, box1, box2);
+    MainFrame.display_grid(MainFrame.current_grid);
     character.move();
     MainFrame.makeSpace();
     box1.checkif_pushed(MainFrame.current_grid, character);
