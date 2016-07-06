@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <cstring>
-#include <time.h>
 #include <stdlib.h>
 #include <vector>
 #include "cm.std.cpp"
@@ -36,7 +35,6 @@ char collision_report(char current_grid[20][20], auto obj) {
 class PLAYER {
 public:
     CMSTD cmstd;
-    vector<string> pstack;
     string signature;
     char direction;
     short int gameLevel = 1;
@@ -81,7 +79,7 @@ public:
             case 'S': x += 1; break;
             case 'D': y += 1; break;
             case 'C':
-                cout << "\nEnter a command: ";
+                cout << "\nGame: Enter a command: ";
                 cin >> command;
                 if (command == "help") {
                     cout << "\nNarrator: You can enter the following commands: \'help\' \'unlock\' \'keys\' \'open\' \'health\'";
@@ -91,14 +89,17 @@ public:
                     if (signature[0] == 'd') {
                         internal_command = 'o';
                     };
-                }
+                } else if ( command == "quit" ) {
+                    cout << "Game: Exiting...\n";
+                    exit(EXIT_SUCCESS);
+                };
                 break;
             default:
                 cout << "Game: (" << direction << ") isn't a move." << endl;
                 break;
         };
     };
-    void object_reaction(char current_grid[20][20]) {
+    void object_reaction(char current_grid[20][20], auto aggrogate) {
         switch (collision_report(current_grid, this)) {
             case '#':
                 x = prev_x;
@@ -127,7 +128,7 @@ public:
                 break;
             case 'M':
                 cout << "You: Take that!" << endl;
-                pstack.push_back("attack_enemy");
+                attack(aggrogate);
                 x = prev_x;
                 y = prev_y;
                 break;
@@ -140,34 +141,6 @@ public:
                     y = prev_y;
                 };
                 break;
-            case 'H':
-                pstack.push_back("box_movement");
-                break;
-        };
-    };
-    void postProcessor(char current_grid[20][20], auto aggrogate1, auto aggrogate2, auto aggrogate3) {
-        for (size_t call = 0; call < pstack.size(); call++) {
-            if (pstack[call] == "attack_enemy") {
-                attack(aggrogate1);
-            };
-            if (pstack[call] == "box_movement") {
-                if (x == aggrogate2.x && y == aggrogate2.y) {
-                    aggrogate2.prev_x = aggrogate2.x;
-                    aggrogate2.prev_y = aggrogate2.y;
-                    if (aggrogate2.deduct_approach(this) == "east") { aggrogate2.y -= 1; };
-                    if (aggrogate2.deduct_approach(this) == "west") { aggrogate2.y += 1; };
-                    if (aggrogate2.deduct_approach(this) == "north") { aggrogate2.x -= 1; };
-                    if (aggrogate2.deduct_approach(this) == "south") { aggrogate2.x += 1; };
-                    if (current_grid[aggrogate2.x][aggrogate2.y] == '#') {
-                        aggrogate2.x = aggrogate2.prev_x;
-                        aggrogate2.y = aggrogate2.prev_y;
-                        x = prev_y;
-                        y = prev_y;
-                    };
-                } else {
-
-                };
-            };
         };
     };
 private:
@@ -233,15 +206,34 @@ public:
     char skin;
     const char& bindSkin;
     const char& bindInt;
-    BOX(short int x, short int y, char skin): bindInt(x), x{x}, y{y}, bindSkin(x), skin{skin} {  };
-    string deduct_approach(auto subject) {
-        if (subject -> y > subject -> prev_y) { return "east"; };
-        if (subject -> y < subject -> prev_y) { return "west"; };
-        if (subject -> x > subject -> prev_x) { return "south"; };
-        if (subject -> x < subject -> prev_x) { return "north"; };
+    BOX(short int x, short int y, char skin): bindInt(x), x{x}, y{y}, bindSkin(x), skin{skin} {
+        prev_x = x;
+        prev_y = y;
+    };
+    string deduct_approach(PLAYER subject) {
+        if (subject.y > subject.prev_y) { return "east"; }; //player moving to the east
+        if (subject.y < subject.prev_y) { return "west"; }; //etc...
+        if (subject.x > subject.prev_x) { return "south"; };
+        if (subject.x < subject.prev_x) { return "north"; };
+    };
+    void checkif_pushed(char current_grid[20][20], PLAYER player) {
+        if (player.x == x && player.y == y)
+        {
+            prev_x = x; prev_y = y;
+            if (deduct_approach(player) == "east") { y += 1; };
+            if (deduct_approach(player) == "west") { y -= 1; };
+            if (deduct_approach(player) == "south") { x += 1; };
+            if (deduct_approach(player) == "north") { x -= 1; };
+            if (collision_report(current_grid, this) == '#') {
+                player.x = player.prev_x;
+                player.y = player.prev_y;
+                x = prev_x; y = prev_y;
+                cout << "You: It seems stuck." << endl;
+            };
+        };
+        current_grid[x][y] = skin;
     };
 };
-
 class GATE {
 public:
     GATE(short int x, short int y, char skin) {  };

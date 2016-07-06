@@ -14,36 +14,9 @@
 #include "external/console_reader.h"
 using namespace std;
 
-void makeSpace() {
-    cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-};
-int genRand(short int param1, short int param2) {
-    srand(time(NULL));
-    return rand() % param1 + param2;
-};
-void display_grid(char current_grid[20][20], auto obj1, auto obj2, auto obj3) {
-    current_grid[obj3.prev_x][obj3.prev_y] = ' ';
-    current_grid[obj3.x][obj3.y] = obj3.skin;
-    current_grid[obj2.prev_x][obj2.prev_y] = ' ';
-    current_grid[obj2.x][obj2.y] = obj2.skin;
-    current_grid[obj1.prev_x][obj1.prev_y] = ' ';
-    current_grid[obj1.x][obj1.y] = obj1.skin;
-    for (size_t row =0; row <= (19); row++) {
-        for (size_t col =0; col <= (19); col++) {
-            cout << current_grid[row][col] << ' ';
-        };
-        cout << endl;
-    };
-};
-void generate(char current_grid[20][20], const auto model, short int seed, short int size) { //the auto typespecifier, is amazing.
-    for (size_t col = 0; col <= size; col++) {
-        for (size_t row = 0; row < size; row++) { current_grid[col + seed][row + seed] = model[col][row]; };
-    };
-};
-
-int main()
+class MainFrameElement
 {
-    //Essential grid imports
+public:
     const char cave[5][5] = {
         {'#','#','#','#','#'},
         {'#','^',' ',' ','#'},
@@ -146,8 +119,38 @@ int main()
         {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
         {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
     };
-/* |
-   Essential variable declaration */
+    void makeSpace() {
+        cout << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+    };
+    void display_grid(char current_grid[20][20], auto obj1, auto obj2, auto obj3) {
+        current_grid[obj3.prev_x][obj3.prev_y] = ' ';
+        current_grid[obj3.x][obj3.y] = obj3.skin;
+        current_grid[obj2.prev_x][obj2.prev_y] = ' ';
+        current_grid[obj2.x][obj2.y] = obj2.skin;
+        current_grid[obj1.prev_x][obj1.prev_y] = ' ';
+        current_grid[obj1.x][obj1.y] = obj1.skin;
+        for (size_t row =0; row <= (19); row++) {
+            for (size_t col =0; col <= (19); col++) {
+                cout << current_grid[row][col] << ' ';
+            };
+            cout << endl;
+        };
+    };
+    void generate(char current_grid[20][20], const auto model, short int seed, short int size) { //the auto typespecifier, is amazing.
+        for (size_t col = 0; col <= size; col++) {
+            for (size_t row = 0; row < size; row++) { current_grid[col + seed][row + seed] = model[col][row]; };
+        };
+    };
+};
+
+static int genRand(short int param1, short int param2) {
+    srand(time(NULL));
+    return rand() % param1 + param2;
+};
+
+int main()
+{
+MainFrameElement MainFrame;
 PLAYER character(10,10,'&');
 NULL_ENTITY nullent;
 
@@ -156,38 +159,37 @@ cout << "\nNarrator: Use the WASD keys to move your character. Press enter after
 cout << "\nNarrator: Use the C key to enter a command." << endl;
 ENEMY monster(3,3,'M');
 if (genRand(2, 0)) {
-    generate(current_grid, cave, genRand(13, 4), 5);
-} else { generate(current_grid, boulder, genRand(13, 4), 5); };
+    MainFrame.generate(MainFrame.current_grid, MainFrame.cave, genRand(13, 4), 5);
+} else { MainFrame.generate(MainFrame.current_grid, MainFrame.boulder, genRand(13, 4), 5); };
 do {
-    display_grid(current_grid, character, monster, nullent);
+    MainFrame.display_grid(MainFrame.current_grid, character, monster, nullent);
     character.move();
-    monster.autoMove(current_grid, character);
-    makeSpace();
-    character.object_reaction(current_grid);
-    character.postProcessor(current_grid, monster, nullent, nullent);
+    monster.autoMove(MainFrame.current_grid, character);
+    MainFrame.makeSpace();
+    character.object_reaction(MainFrame.current_grid, monster);
 } while(character.gameLevel == 1);
 //cleanup and setting up level two
-generate(current_grid, levelTwo, 0, 20);
+MainFrame.generate(MainFrame.current_grid, MainFrame.levelTwo, 0, 20);
 do {
-    display_grid(current_grid, character, nullent, nullent);
+    MainFrame.display_grid(MainFrame.current_grid, character, nullent, nullent);
     character.move();
-    makeSpace();
-    character.object_reaction(current_grid);
-    character.postProcessor(current_grid, nullent, nullent, nullent);
+    MainFrame.makeSpace();
+    character.object_reaction(MainFrame.current_grid, nullent);
 } while(character.gameLevel == 2);
 //cleanup and setup level three
 BOX box1(2, 5, 'H');
 BOX box2(3, 8, 'H');
-generate(current_grid, levelThree, 0, 20);
+MainFrame.generate(MainFrame.current_grid, MainFrame.levelThree, 0, 20);
 do {
-    display_grid(current_grid, character, box1, box2);
+    MainFrame.display_grid(MainFrame.current_grid, character, box1, box2);
     character.move();
-    makeSpace();
-    character.object_reaction(current_grid);
-    character.postProcessor(current_grid, nullent, box1, box2);
+    MainFrame.makeSpace();
+    box1.checkif_pushed(MainFrame.current_grid, character);
+    box2.checkif_pushed(MainFrame.current_grid, character);
+    character.object_reaction(MainFrame.current_grid, nullent);
 } while(character.gameLevel == 3);
 
-makeSpace();
+MainFrame.makeSpace();
 cout << "Narrator: Congradulations. You beat the game." << endl;
 exit(EXIT_FAILURE); //as soon as I implimented level two...
 return 0;
