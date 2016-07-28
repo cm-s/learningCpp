@@ -1,6 +1,6 @@
 echo "Building adv_game..."
 javac adv_game.java
-java adv_game
+java adv_game $1 $2 $3
 rm *.class
 if [ -e level1 ]; then
     rm level1

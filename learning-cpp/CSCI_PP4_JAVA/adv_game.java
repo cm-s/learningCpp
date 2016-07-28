@@ -167,6 +167,7 @@ class ENTITY_PLAYER implements MainFrame
     char say;
     boolean firstTurn = true;
     boolean eventTriggered = false;
+    boolean levelOverride = false;
     Scanner console_buffer = new Scanner(System.in);
     Vector keys = new Vector();
     Random randGenerator = new Random();
@@ -279,6 +280,20 @@ class ENTITY_PLAYER implements MainFrame
         switch( adv_game.this_object(x, y) ) {
             case '#':
                 System.out.println("Narrator: You cannot move here.");
+                x = prev_x; y = prev_y;
+                main_board[x][y] = skin;
+                break;
+            case 'B':
+                if ( MainFrame.randomGenerator.nextBoolean() )
+                { System.out.println("You: Telling by this old mechanism, nobody's been here in a while."); }
+                else { System.out.println("Narrator: You cannot move here."); };
+                x = prev_x; y = prev_y;
+                main_board[x][y] = skin;
+                break;
+            case '8':
+                if ( MainFrame.randomGenerator.nextBoolean() )
+                { System.out.println("You: A rusted valve."); }
+                else { System.out.println("Narrator: You cannot move here."); };
                 x = prev_x; y = prev_y;
                 main_board[x][y] = skin;
                 break;
@@ -561,7 +576,6 @@ class ENTITY_ENEMY_HUNTER implements MainFrame
         };
         main_board[x][y] = skin;
         main_board[prev_x][prev_y] = ' ';
-        System.out.println("direction: " + direction);
     };
     };
 };
@@ -688,6 +702,9 @@ public class adv_game implements MainFrame {
             case '/': return '/';
             case '@': return '@';
             case '_': return '_';
+            case '8': return '8';
+            case '=': return '=';
+            case 'B': return 'B';
         };
         return ' ';
     };
@@ -724,7 +741,19 @@ public class adv_game implements MainFrame {
                 break;
         };
     };
-
+    static void argparser(String[] args, ENTITY_PLAYER player) {
+        try {
+            if (args[0].equals("-l")) {
+                try {
+                    player.currentLevel = Byte.parseByte(args[1]);
+                    player.levelOverride = true;
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    System.out.println("Invalid argument list: The -l argument must be followed by the level to be skipped to.");
+                    System.exit(1);
+                };
+            };
+        } catch (ArrayIndexOutOfBoundsException ex) {};
+    };
     static void welcome(Path saveState) {
         Scanner console_buffer = new Scanner(System.in);
         System.out.println("******************************************");
@@ -774,6 +803,10 @@ public class adv_game implements MainFrame {
         ENTITY_PLAYER player = new ENTITY_PLAYER(10, 10);
         FileCommandInterpreter processor_t = new FileCommandInterpreter();
         Path saveState = Paths.get("save_state.dat");
+
+            //  Check for arguments
+            argparser(args, player);
+
         //KeyEvent keyCode = new KeyListener();
 
         JOptionPane.showMessageDialog(null, "Narrator: Use the WASD keys to move the player." + "\nAnd use C to enter a command.");
@@ -787,7 +820,7 @@ public class adv_game implements MainFrame {
         ENTITY_ENEMY_HUNTER monster = new ENTITY_ENEMY_HUNTER(4, 4, 'M');
         GATEKEEPER l1Gate1 = new GATEKEEPER(9, 14, 323, 0, true);
         GATEKEEPER l1Gate2 = new GATEKEEPER(11, 14, 232, 1, true);
-        player.currentLevel = 1;
+        if (!player.levelOverride) { player.currentLevel = 1; };
         player.SAVE("level1");
         while (player.currentLevel == 1) {
             MainFrame.make_space();
