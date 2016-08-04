@@ -11,11 +11,11 @@ using namespace std;
 auto indexer(auto input, string type, int min, int max) {
     if (type == "int") {
         if (min < 2) {
-            cout << "\nError: " << __FILE__ << ": indexer(): parameter three invalid. Minimum cancatenation index cannot be less than 2." << endl;
+            cout << "\nError: " << __FILE__ << ": indexer(): parameter three invalid. Minimum concatenation index cannot be less than 2." << endl;
             exit(EXIT_SUCCESS);
         };
         if (max < 1) {
-            cout << "\nError: " << __FILE__ << ": indexer(): parameter four invalid. Maximum cancatenation index cannot be less than 1." << endl;
+            cout << "\nError: " << __FILE__ << ": indexer(): parameter four invalid. Maximum concatenation index cannot be less than 1." << endl;
             exit(EXIT_SUCCESS);
         };
         int* final;
