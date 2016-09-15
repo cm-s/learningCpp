@@ -6,15 +6,32 @@
  * Date created: DATE
  */
 
+ # PROGRAM NAME
+ # PROGRAM DESCRIPTION
+ # 
+ # PROGRAMMER NAME
+ # Date created: DATE
+
 #include <iostream>
 using namespace std;
 
 /**
+ * FUNCTION NAME
+ *
  * FUNCTION DESCRIPTION
  *
  * @param
  * @return
+ *
  */
+
+ # FUNCTION NAME
+ #
+ # FUNCTION DESCRIPTION
+ # 
+ # @param
+ # @return
+
  void someFunction(int someParam);
 
 int main ()
