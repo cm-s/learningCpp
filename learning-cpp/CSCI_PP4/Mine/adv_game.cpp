@@ -185,6 +185,6 @@ do {
 
 MainFrame.makeSpace();
 cout << "Narrator: Congradulations. You beat the game." << endl;
-exit(EXIT_FAILURE); //as soon as I implimented level two...
+exit(EXIT_FAILURE); // reasearch what this function does
 return 0;
 }

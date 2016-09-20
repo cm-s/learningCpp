@@ -1,23 +1,18 @@
-CXX = g++
+CXX = g++ -std=c++17
 TARGET = adv_game
 #CXXFLAGS = (-std=c++11)(-I ./external/)
 
-#adv_game is the consolidated compilation of both object files created in the "adv_game.o" instruction below.
 $(TARGET): adv_game.o objs.o console_reader.o
-	$(CXX) -std=c++17 -o adv_game adv_game.o objs.o console_reader.o
+	$(CXX) -o adv_game adv_game.o objs.o console_reader.o
 
-#the objectification of adv_game.cpp with path to the header included in the instructions (line 7)
-#I do not know why the header is included in the "instructions".
 adv_game.o: adv_game.cpp ./external/objs.h ./external/console_reader.h
-	$(CXX) -std=c++17 -c adv_game.cpp
+	$(CXX) -c adv_game.cpp
 
-#defines the compilation process of the player_enemy header file.
-#the player_enemy.cpp file isn't included in the compilation process because it is linked within the header.
 objs.o: ./external/objs.cpp ./external/objs.h ./external/cm.std.cpp
-	$(CXX) -std=c++17 -c ./external/objs.cpp ./external/cm.std.cpp
+	$(CXX) -c ./external/objs.cpp ./external/cm.std.cpp
 
 console_reader.o: ./external/console_reader.cpp ./external/console_reader.h
-	$(CXX) -std=c++17 -c ./external/console_reader.cpp
+	$(CXX) -c ./external/console_reader.cpp
 
 clean:
 	rm *.o
