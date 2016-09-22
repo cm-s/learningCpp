@@ -12,6 +12,15 @@
 #include <cmath>
 using namespace std;
 struct CMSTD {
+    bool in(string subject, string whitelist[]) {
+        int whitelist_size;
+        for (int item = 0; item <= whitelist -> size(); item++) {
+            if (whitelist[item] == subject) {
+                return true;
+            };
+        };
+        return false;
+    };
     int combineNum(string base, string addon) {
         string* buffer;
         buffer = new string;
