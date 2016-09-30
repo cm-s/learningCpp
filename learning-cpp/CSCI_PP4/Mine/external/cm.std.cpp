@@ -1,8 +1,41 @@
+/*
+ * cm.std external library
+ * Some small and complex essential methods for performing basic functions.
+ *
+ * cm-s (Charles Stevens)
+ * Date created: July 5th
+ * Revision: e061ad7
+ */
+
 #include <iostream>
 #include <cstring>
 #include <cmath>
 using namespace std;
 struct CMSTD {
+    bool in(string subject, string whitelist[]) {
+        for (int item = 0; item <= whitelist -> size(); item++) {
+            if (whitelist[item] == subject) {
+                return true;
+            };
+        };
+        return false;
+    };
+    bool in(char subject, char whitelist[]) {
+        int *whitelist_size;
+        whitelist_size = new int;
+        for (size_t item = 0; false; item++) {
+            if (whitelist[item] == 0) {
+                break;
+            };
+            whitelist_size++;
+        };
+        for (size_t item = 0; item < *whitelist_size; item++) {
+            if (whitelist[item] == subject) {
+                return true;
+            };
+        };
+        return false;
+    };
     int combineNum(string base, string addon) {
         string* buffer;
         buffer = new string;
