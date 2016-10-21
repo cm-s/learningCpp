@@ -1,8 +1,107 @@
+/*
+ * cm.std external library
+ * Some small and complex essential methods for performing basic functions.
+ *
+ * cm-s (Charles Stevens)
+ * Date created: July 5th
+ * Revision: e061ad7
+ */
+
 #include <iostream>
 #include <cstring>
 #include <cmath>
 using namespace std;
+struct SBUF {
+    int *base10_counter = new int;
+    float *input_surrogate = new float;
+    string *base_value = new string;
+    void scat(string input) {
+        for (size_t head = 0; true; head++) {
+            if (input[head] != 0) { *base_value += input[head]; }
+            else { break; };
+        };
+    };
+    void ccat(char input) {
+        *base_value += input;
+    };
+    void ncat(int input) {
+        if ((input - 10) < 0) {
+            cb10(input);
+        } else {
+            *input_surrogate = input;
+            while ((int) *input_surrogate != 0) {
+                *base10_counter += 1;
+                *input_surrogate /= 10;
+            };
+            while (*base10_counter != 0) {
+                *input_surrogate = input;
+                *input_surrogate /= pow(10, *base10_counter);
+                cb10( (int) ((*input_surrogate - (int)*input_surrogate ) * 10) );
+                *base10_counter -= 1;
+            };
+        };
+    };
+    void bcat(bool input, bool bcase) {
+        if (input) {
+            if (bcase) {
+                *base_value += 'T';
+            } else { *base_value += 't'; };
+            *base_value += 'r';
+            *base_value += 'u';
+            *base_value += 'e';
+        } else {
+            if (bcase) {
+                *base_value += 'F';
+            } else { *base_value += 'f'; };
+            *base_value += 'a';
+            *base_value += 'l';
+            *base_value += 's';
+            *base_value += 'e';
+        };
+    };
+    string val() {
+        return *base_value;
+    };
+    // ConvertOR: What is being convertED.
+    void cb10(int convertor) {
+        switch (convertor) {
+            case 1: *base_value += '1'; break;
+            case 2: *base_value += '2'; break;
+            case 3: *base_value += '3'; break;
+            case 4: *base_value += '4'; break;
+            case 5: *base_value += '5'; break;
+            case 6: *base_value += '6'; break;
+            case 7: *base_value += '7'; break;
+            case 8: *base_value += '8'; break;
+            case 9: *base_value += '9'; break;
+        };
+    };
+};
 struct CMSTD {
+    bool in(string subject, string whitelist[]) {
+        for (int item = 0; item <= whitelist -> size(); item++) {
+            if (whitelist[item] == subject) {
+                return true;
+            };
+        };
+        return false;
+    };
+    bool in(char subject, char whitelist[]) {
+        int *whitelist_size;
+        whitelist_size = new int;
+        for (size_t item = 0; false; item++) {
+            if (whitelist[item] == 0) {
+                break;
+            };
+            whitelist_size++;
+        };
+        for (size_t item = 0; item < *whitelist_size; item++) {
+            if (whitelist[item] == subject) {
+                return true;
+            };
+        };
+        return false;
+    };
     int combineNum(string base, string addon) {
         string* buffer;
         buffer = new string;
@@ -93,3 +192,4 @@ struct CMSTD {
         };
     };
 };
+
