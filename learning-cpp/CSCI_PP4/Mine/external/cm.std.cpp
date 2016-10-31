@@ -62,6 +62,9 @@ struct SBUF {
     string val() {
         return *base_value;
     };
+    void clear() {
+        *base_value = "";
+    };
     // ConvertOR: What is being convertED.
     void cb10(int convertor) {
         switch (convertor) {
@@ -192,4 +195,3 @@ struct CMSTD {
         };
     };
 };
-
